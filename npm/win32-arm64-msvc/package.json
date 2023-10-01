@@ -1,12 +1,12 @@
 {
-  "name": "reflink-win32-arm64-msvc",
+  "name": "refclone-win32-arm64-msvc",
   "version": "0.0.0",
   "os": [
     "win32"
   ],
-  "main": "reflink.win32-arm64-msvc.node",
+  "main": "refclone.win32-arm64-msvc.node",
   "files": [
-    "reflink.win32-arm64-msvc.node"
+    "refclone.win32-arm64-msvc.node"
   ],
   "license": "MIT",
   "engines": {

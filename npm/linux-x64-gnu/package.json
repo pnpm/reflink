@@ -1,12 +1,12 @@
 {
-  "name": "reflink-linux-x64-gnu",
+  "name": "refclone-linux-x64-gnu",
   "version": "0.0.0",
   "os": [
     "linux"
   ],
-  "main": "reflink.linux-x64-gnu.node",
+  "main": "refclone.linux-x64-gnu.node",
   "files": [
-    "reflink.linux-x64-gnu.node"
+    "refclone.linux-x64-gnu.node"
   ],
   "license": "MIT",
   "engines": {

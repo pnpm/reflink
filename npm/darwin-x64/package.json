@@ -1,12 +1,12 @@
 {
-  "name": "reflink-darwin-x64",
+  "name": "refclone-darwin-x64",
   "version": "0.0.0",
   "os": [
     "darwin"
   ],
-  "main": "reflink.darwin-x64.node",
+  "main": "refclone.darwin-x64.node",
   "files": [
-    "reflink.darwin-x64.node"
+    "refclone.darwin-x64.node"
   ],
   "license": "MIT",
   "engines": {

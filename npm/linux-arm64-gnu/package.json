@@ -1,12 +1,12 @@
 {
-  "name": "reflink-linux-arm64-gnu",
+  "name": "refclone-linux-arm64-gnu",
   "version": "0.0.0",
   "os": [
     "linux"
   ],
-  "main": "reflink.linux-arm64-gnu.node",
+  "main": "refclone.linux-arm64-gnu.node",
   "files": [
-    "reflink.linux-arm64-gnu.node"
+    "refclone.linux-arm64-gnu.node"
   ],
   "license": "MIT",
   "engines": {
