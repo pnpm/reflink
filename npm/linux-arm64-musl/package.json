@@ -4,9 +4,6 @@
   "os": [
     "linux"
   ],
-  "cpu": [
-    "arm64"
-  ],
   "main": "reflink.linux-arm64-musl.node",
   "files": [
     "reflink.linux-arm64-musl.node"

@@ -4,9 +4,6 @@
   "os": [
     "darwin"
   ],
-  "cpu": [
-    "arm64"
-  ],
   "main": "reflink.darwin-arm64.node",
   "files": [
     "reflink.darwin-arm64.node"

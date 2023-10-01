@@ -4,9 +4,6 @@
   "os": [
     "darwin"
   ],
-  "cpu": [
-    "x64"
-  ],
   "main": "reflink.darwin-x64.node",
   "files": [
     "reflink.darwin-x64.node"

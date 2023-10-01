@@ -5,7 +5,7 @@ extern crate napi_derive;
 
 use napi::{bindgen_prelude::AsyncTask, Env, Error, JsNumber, Result, Task};
 use std::path::PathBuf;
-use reflink;
+use reflink_copy;
 
 pub struct AsyncReflink {
     src: PathBuf,
@@ -18,24 +18,7 @@ impl Task for AsyncReflink {
     type JsValue = JsNumber;
 
     fn compute(&mut self) -> Result<Self::Output> {
-        match reflink::reflink(&self.src, &self.dst) {
-            Ok(_) => Ok(()),
-            Err(err) => Err(Error::from_reason(format!("Reflink error: {:?}", err))),
-        }
-    }
-
-    fn resolve(&mut self, env: Env, _: ()) -> Result<Self::JsValue> {
-        env.create_int32(0)
-    }
-}
-
-#[napi]
-impl Task for reflink_sync {
-    type Output = ();
-    type JsValue = JsNumber;
-
-    fn compute(&mut self) -> Result<Self::Output> {
-        match reflink::reflink(&self.src, &self.dst) {
+        match reflink_copy::reflink(&self.src, &self.dst) {
             Ok(_) => Ok(()),
             Err(err) => Err(Error::from_reason(format!("Reflink error: {:?}", err))),
         }
@@ -59,7 +42,7 @@ pub fn reflink_task(src: String, dst: String) -> AsyncTask<AsyncReflink> {
 pub fn reflink_sync(env: Env, src: String, dst: String) -> Result<JsNumber> {
     let src_path = PathBuf::from(src);
     let dst_path = PathBuf::from(dst);
-    match reflink::reflink(&src_path, &dst_path) {
+    match reflink_copy::reflink(&src_path, &dst_path) {
         Ok(_) => Ok(env.create_int32(0)?),
         Err(err) => Err(Error::from_reason(format!("Reflink error: {:?}", err))),
     }
