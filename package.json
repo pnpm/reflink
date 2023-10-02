@@ -13,7 +13,8 @@
         "aarch64-pc-windows-msvc",
         "x86_64-unknown-linux-musl"
       ]
-    }
+    },
+    "npmClient": "yarn"
   },
   "files": [
     "index.js",
@@ -25,9 +26,6 @@
     "@types/node": "^20.8.0",
     "typescript": "^5.2.2",
     "vitest": "^0.34.6"
-  },
-  "ava": {
-    "timeout": "3m"
   },
   "engines": {
     "node": ">= 10"
