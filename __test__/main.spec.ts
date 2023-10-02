@@ -1,6 +1,5 @@
 import {
   afterAll,
-  afterEach,
   beforeAll,
   beforeEach,
   describe,
@@ -9,7 +8,7 @@ import {
 } from 'vitest';
 import { join } from 'path';
 import { reflinkFileSync, reflinkFile } from '../index.js';
-import { mkdir, readFile, rm, writeFile } from 'fs/promises';
+import { mkdir, rm, writeFile } from 'fs/promises';
 import { readFileSync } from 'fs';
 import { randomUUID } from 'crypto';
 
@@ -148,6 +147,50 @@ describe('reflink', () => {
         join(sandboxDir, 'does-not-exist', 'file1-copy.txt')
       );
     }).toThrow();
+  });
+
+  it('should not fail with relative paths', async () => {
+    const file = {
+      path: "file.txt",
+      content: "Hello World!",
+    }
+
+    const dest = "file-copy.txt";
+
+    await rm(dest, { force: true });
+    await writeFile(file.path, file.content);
+
+    await reflinkFile(file.path, dest);
+
+    const content = readFileSync(dest, 'utf-8');
+
+    expect(content).toBe(file.content);
+
+    // clean both files
+    await rm("file.txt");
+    await rm("file-copy.txt");
+  });
+
+  it('should not fail with nested relative paths', async () => {
+    const file = {
+      path: "nested/file.txt",
+      content: "Hello World!",
+    }
+
+    const dest = "nested/file-copy.txt";
+
+    await rm(dest, { force: true });
+    await mkdir("nested", { recursive: true });
+    await writeFile(file.path, file.content);
+
+    await reflinkFile(file.path, dest);
+
+    const content = readFileSync(dest, 'utf-8');
+
+    expect(content).toBe(file.content);
+
+    // clean both files
+    await rm("nested", { recursive: true });
   });
 
   it('should correctly clone 1000 files (sync)', async () => {

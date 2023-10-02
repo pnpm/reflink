@@ -9,6 +9,9 @@
   "os": [
     "darwin"
   ],
+  "cpu": [
+    "x64"
+  ],
   "main": "refclone.darwin-x64.node",
   "files": [
     "refclone.darwin-x64.node"

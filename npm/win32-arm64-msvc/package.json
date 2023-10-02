@@ -9,6 +9,9 @@
   "os": [
     "win32"
   ],
+  "cpu": [
+    "arm64"
+  ],
   "main": "refclone.win32-arm64-msvc.node",
   "files": [
     "refclone.win32-arm64-msvc.node"

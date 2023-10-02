@@ -9,6 +9,9 @@
   "os": [
     "linux"
   ],
+  "cpu": [
+    "arm64"
+  ],
   "main": "refclone.linux-arm64-musl.node",
   "files": [
     "refclone.linux-arm64-musl.node"

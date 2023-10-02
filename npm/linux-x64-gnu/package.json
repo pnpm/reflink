@@ -9,6 +9,9 @@
   "os": [
     "linux"
   ],
+  "cpu": [
+    "x64"
+  ],
   "main": "refclone.linux-x64-gnu.node",
   "files": [
     "refclone.linux-x64-gnu.node"
