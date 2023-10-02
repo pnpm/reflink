@@ -343,16 +343,12 @@ jobs:
           npm config set provenance true
           if git log -1 --pretty=%B | grep "^[0-9]\+\.[0-9]\+\.[0-9]\+$";
           then
-            yarn config set npmPublishRegistry https://registry.npmjs.org/
-            yarn config set 'npmRegistries["//registry.npmjs.org"].npmAuthToken' $NPM_TOKEN
-            yarn prepublishOnly
-            yarn npm publish --access public
+            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+            npm publish --access public
           elif git log -1 --pretty=%B | grep "^[0-9]\+\.[0-9]\+\.[0-9]\+";
           then
-            yarn config set npmPublishRegistry https://registry.npmjs.org/
-            yarn config set 'npmRegistries["//registry.npmjs.org"].npmAuthToken' $NPM_TOKEN
-            yarn prepublishOnly
-            yarn npm publish --tag next --access public
+            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+            npm publish --tag next --access public
           else
             echo "Not a release, skipping publish"
           fi
