@@ -1,6 +1,6 @@
 {
-  "name": "refclone-win32-x64-msvc",
-  "version": "0.1.0",
+  "name": "@refclone/refclone-win32-x64-msvc",
+  "version": "0.1.1",
   "os": [
     "win32"
   ],

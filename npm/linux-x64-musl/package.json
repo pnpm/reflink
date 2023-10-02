@@ -1,6 +1,6 @@
 {
-  "name": "refclone-linux-x64-musl",
-  "version": "0.1.0",
+  "name": "@refclone/refclone-linux-x64-musl",
+  "version": "0.1.1",
   "os": [
     "linux"
   ],

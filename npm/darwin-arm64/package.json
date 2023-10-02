@@ -1,6 +1,6 @@
 {
-  "name": "refclone-darwin-arm64",
-  "version": "0.1.0",
+  "name": "@refclone/refclone-darwin-arm64",
+  "version": "0.1.1",
   "os": [
     "darwin"
   ],
