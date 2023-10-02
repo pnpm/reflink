@@ -1,6 +1,6 @@
 {
   "name": "@refclone/refclone-win32-x64-msvc",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "repository": {
     "url": "https://github.com/nachoaldamav/cross-reflink.git",
     "type": "git",
