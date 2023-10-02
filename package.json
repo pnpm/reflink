@@ -1,8 +1,11 @@
 {
   "name": "refclone",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "main": "index.js",
   "types": "index.d.ts",
+  "repository": {
+    "url": "https://github.com/nachoaldamav/cross-reflink"
+  },
   "napi": {
     "name": "refclone",
     "triples": {
