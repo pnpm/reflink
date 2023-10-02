@@ -214,6 +214,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@refclone/refclone@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "@refclone/refclone@workspace:."
+  dependencies:
+    "@napi-rs/cli": ^2.16.3
+    "@types/node": ^20.8.0
+    typescript: ^5.2.2
+    vitest: ^0.34.6
+  languageName: unknown
+  linkType: soft
+
 "@sinclair/typebox@npm:^0.27.8":
   version: 0.27.8
   resolution: "@sinclair/typebox@npm:0.27.8"
@@ -1365,17 +1376,6 @@ __metadata:
   checksum: bdcbe6c22e846b6af075e32cf8f4751c2576238c5043169a1c221c92ee2878458a816a4ea33f4c67623c0b6827c8a400409bfb3cf0bf3381392d0b1dfb52ac8d
   languageName: node
   linkType: hard
-
-"refclone@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "refclone@workspace:."
-  dependencies:
-    "@napi-rs/cli": ^2.16.3
-    "@types/node": ^20.8.0
-    typescript: ^5.2.2
-    vitest: ^0.34.6
-  languageName: unknown
-  linkType: soft
 
 "retry@npm:^0.12.0":
   version: 0.12.0
