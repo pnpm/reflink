@@ -1,9 +1,9 @@
 # @refclone/refclone
 
 [![npm version](https://badge.fury.io/js/%40refclone%2Frefclone.svg)](https://www.npmjs.com/package/@refclone/refclone)
-[![Build Status](https://github.com/nachoaldamav/cross-reflink/workflows/CI/badge.svg)](https://github.com/nachoaldamav/cross-reflink/actions)
+[![Build Status](https://github.com/pnpm/refclone/workflows/CI/badge.svg)](https://github.com/pnpm/refclone/actions)
 
-Copy-on-write file cloning for Node.js, powered by the NAPI-RS and built upon [reflink-copy](https://github.com/cargo-bins/reflink-copy). This package supports a variety of platforms, including ARM and x86 architectures.
+Copy-on-write file cloning for Node.js, powered by NAPI-RS and built upon [reflink-copy](https://github.com/cargo-bins/reflink-copy). This package supports a variety of platforms, including ARM and x86 architectures.
 
 ### Supported Platforms
     - Linux
