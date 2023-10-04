@@ -1,8 +1,8 @@
 {
-  "name": "@refclone/refclone-win32-x64-msvc",
+  "name": "@reflink/reflink-win32-x64-msvc",
   "version": "0.1.4",
   "repository": {
-    "url": "https://github.com/nachoaldamav/cross-reflink.git",
+    "url": "https://github.com/pnpm/reflink.git",
     "type": "git",
     "directory": "win32-x64-msvc"
   },
@@ -12,9 +12,9 @@
   "cpu": [
     "x64"
   ],
-  "main": "refclone.win32-x64-msvc.node",
+  "main": "reflink.win32-x64-msvc.node",
   "files": [
-    "refclone.win32-x64-msvc.node"
+    "reflink.win32-x64-msvc.node"
   ],
   "license": "MIT",
   "engines": {

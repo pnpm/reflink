@@ -1,13 +1,13 @@
 {
-  "name": "@refclone/refclone",
+  "name": "@reflink/reflink",
   "version": "0.1.5",
   "main": "index.js",
   "types": "index.d.ts",
   "repository": {
-    "url": "https://github.com/nachoaldamav/cross-reflink"
+    "url": "https://github.com/pnpm/reflink"
   },
   "napi": {
-    "name": "refclone",
+    "name": "reflink",
     "triples": {
       "additional": [
         "aarch64-apple-darwin",

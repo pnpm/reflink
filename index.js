@@ -32,24 +32,24 @@ switch (platform) {
   case 'android':
     switch (arch) {
       case 'arm64':
-        localFileExisted = existsSync(join(__dirname, 'refclone.android-arm64.node'))
+        localFileExisted = existsSync(join(__dirname, 'reflink.android-arm64.node'))
         try {
           if (localFileExisted) {
-            nativeBinding = require('./refclone.android-arm64.node')
+            nativeBinding = require('./reflink.android-arm64.node')
           } else {
-            nativeBinding = require('@refclone/refclone-android-arm64')
+            nativeBinding = require('@reflink/reflink-android-arm64')
           }
         } catch (e) {
           loadError = e
         }
         break
       case 'arm':
-        localFileExisted = existsSync(join(__dirname, 'refclone.android-arm-eabi.node'))
+        localFileExisted = existsSync(join(__dirname, 'reflink.android-arm-eabi.node'))
         try {
           if (localFileExisted) {
-            nativeBinding = require('./refclone.android-arm-eabi.node')
+            nativeBinding = require('./reflink.android-arm-eabi.node')
           } else {
-            nativeBinding = require('@refclone/refclone-android-arm-eabi')
+            nativeBinding = require('@reflink/reflink-android-arm-eabi')
           }
         } catch (e) {
           loadError = e
@@ -63,13 +63,13 @@ switch (platform) {
     switch (arch) {
       case 'x64':
         localFileExisted = existsSync(
-          join(__dirname, 'refclone.win32-x64-msvc.node')
+          join(__dirname, 'reflink.win32-x64-msvc.node')
         )
         try {
           if (localFileExisted) {
-            nativeBinding = require('./refclone.win32-x64-msvc.node')
+            nativeBinding = require('./reflink.win32-x64-msvc.node')
           } else {
-            nativeBinding = require('@refclone/refclone-win32-x64-msvc')
+            nativeBinding = require('@reflink/reflink-win32-x64-msvc')
           }
         } catch (e) {
           loadError = e
@@ -77,13 +77,13 @@ switch (platform) {
         break
       case 'ia32':
         localFileExisted = existsSync(
-          join(__dirname, 'refclone.win32-ia32-msvc.node')
+          join(__dirname, 'reflink.win32-ia32-msvc.node')
         )
         try {
           if (localFileExisted) {
-            nativeBinding = require('./refclone.win32-ia32-msvc.node')
+            nativeBinding = require('./reflink.win32-ia32-msvc.node')
           } else {
-            nativeBinding = require('@refclone/refclone-win32-ia32-msvc')
+            nativeBinding = require('@reflink/reflink-win32-ia32-msvc')
           }
         } catch (e) {
           loadError = e
@@ -91,13 +91,13 @@ switch (platform) {
         break
       case 'arm64':
         localFileExisted = existsSync(
-          join(__dirname, 'refclone.win32-arm64-msvc.node')
+          join(__dirname, 'reflink.win32-arm64-msvc.node')
         )
         try {
           if (localFileExisted) {
-            nativeBinding = require('./refclone.win32-arm64-msvc.node')
+            nativeBinding = require('./reflink.win32-arm64-msvc.node')
           } else {
-            nativeBinding = require('@refclone/refclone-win32-arm64-msvc')
+            nativeBinding = require('@reflink/reflink-win32-arm64-msvc')
           }
         } catch (e) {
           loadError = e
@@ -108,23 +108,23 @@ switch (platform) {
     }
     break
   case 'darwin':
-    localFileExisted = existsSync(join(__dirname, 'refclone.darwin-universal.node'))
+    localFileExisted = existsSync(join(__dirname, 'reflink.darwin-universal.node'))
     try {
       if (localFileExisted) {
-        nativeBinding = require('./refclone.darwin-universal.node')
+        nativeBinding = require('./reflink.darwin-universal.node')
       } else {
-        nativeBinding = require('@refclone/refclone-darwin-universal')
+        nativeBinding = require('@reflink/reflink-darwin-universal')
       }
       break
     } catch {}
     switch (arch) {
       case 'x64':
-        localFileExisted = existsSync(join(__dirname, 'refclone.darwin-x64.node'))
+        localFileExisted = existsSync(join(__dirname, 'reflink.darwin-x64.node'))
         try {
           if (localFileExisted) {
-            nativeBinding = require('./refclone.darwin-x64.node')
+            nativeBinding = require('./reflink.darwin-x64.node')
           } else {
-            nativeBinding = require('@refclone/refclone-darwin-x64')
+            nativeBinding = require('@reflink/reflink-darwin-x64')
           }
         } catch (e) {
           loadError = e
@@ -132,13 +132,13 @@ switch (platform) {
         break
       case 'arm64':
         localFileExisted = existsSync(
-          join(__dirname, 'refclone.darwin-arm64.node')
+          join(__dirname, 'reflink.darwin-arm64.node')
         )
         try {
           if (localFileExisted) {
-            nativeBinding = require('./refclone.darwin-arm64.node')
+            nativeBinding = require('./reflink.darwin-arm64.node')
           } else {
-            nativeBinding = require('@refclone/refclone-darwin-arm64')
+            nativeBinding = require('@reflink/reflink-darwin-arm64')
           }
         } catch (e) {
           loadError = e
@@ -152,12 +152,12 @@ switch (platform) {
     if (arch !== 'x64') {
       throw new Error(`Unsupported architecture on FreeBSD: ${arch}`)
     }
-    localFileExisted = existsSync(join(__dirname, 'refclone.freebsd-x64.node'))
+    localFileExisted = existsSync(join(__dirname, 'reflink.freebsd-x64.node'))
     try {
       if (localFileExisted) {
-        nativeBinding = require('./refclone.freebsd-x64.node')
+        nativeBinding = require('./reflink.freebsd-x64.node')
       } else {
-        nativeBinding = require('@refclone/refclone-freebsd-x64')
+        nativeBinding = require('@reflink/reflink-freebsd-x64')
       }
     } catch (e) {
       loadError = e
@@ -168,26 +168,26 @@ switch (platform) {
       case 'x64':
         if (isMusl()) {
           localFileExisted = existsSync(
-            join(__dirname, 'refclone.linux-x64-musl.node')
+            join(__dirname, 'reflink.linux-x64-musl.node')
           )
           try {
             if (localFileExisted) {
-              nativeBinding = require('./refclone.linux-x64-musl.node')
+              nativeBinding = require('./reflink.linux-x64-musl.node')
             } else {
-              nativeBinding = require('@refclone/refclone-linux-x64-musl')
+              nativeBinding = require('@reflink/reflink-linux-x64-musl')
             }
           } catch (e) {
             loadError = e
           }
         } else {
           localFileExisted = existsSync(
-            join(__dirname, 'refclone.linux-x64-gnu.node')
+            join(__dirname, 'reflink.linux-x64-gnu.node')
           )
           try {
             if (localFileExisted) {
-              nativeBinding = require('./refclone.linux-x64-gnu.node')
+              nativeBinding = require('./reflink.linux-x64-gnu.node')
             } else {
-              nativeBinding = require('@refclone/refclone-linux-x64-gnu')
+              nativeBinding = require('@reflink/reflink-linux-x64-gnu')
             }
           } catch (e) {
             loadError = e
@@ -197,26 +197,26 @@ switch (platform) {
       case 'arm64':
         if (isMusl()) {
           localFileExisted = existsSync(
-            join(__dirname, 'refclone.linux-arm64-musl.node')
+            join(__dirname, 'reflink.linux-arm64-musl.node')
           )
           try {
             if (localFileExisted) {
-              nativeBinding = require('./refclone.linux-arm64-musl.node')
+              nativeBinding = require('./reflink.linux-arm64-musl.node')
             } else {
-              nativeBinding = require('@refclone/refclone-linux-arm64-musl')
+              nativeBinding = require('@reflink/reflink-linux-arm64-musl')
             }
           } catch (e) {
             loadError = e
           }
         } else {
           localFileExisted = existsSync(
-            join(__dirname, 'refclone.linux-arm64-gnu.node')
+            join(__dirname, 'reflink.linux-arm64-gnu.node')
           )
           try {
             if (localFileExisted) {
-              nativeBinding = require('./refclone.linux-arm64-gnu.node')
+              nativeBinding = require('./reflink.linux-arm64-gnu.node')
             } else {
-              nativeBinding = require('@refclone/refclone-linux-arm64-gnu')
+              nativeBinding = require('@reflink/reflink-linux-arm64-gnu')
             }
           } catch (e) {
             loadError = e
@@ -225,13 +225,13 @@ switch (platform) {
         break
       case 'arm':
         localFileExisted = existsSync(
-          join(__dirname, 'refclone.linux-arm-gnueabihf.node')
+          join(__dirname, 'reflink.linux-arm-gnueabihf.node')
         )
         try {
           if (localFileExisted) {
-            nativeBinding = require('./refclone.linux-arm-gnueabihf.node')
+            nativeBinding = require('./reflink.linux-arm-gnueabihf.node')
           } else {
-            nativeBinding = require('@refclone/refclone-linux-arm-gnueabihf')
+            nativeBinding = require('@reflink/reflink-linux-arm-gnueabihf')
           }
         } catch (e) {
           loadError = e

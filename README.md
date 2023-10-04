@@ -1,7 +1,7 @@
-# @refclone/refclone
+# @reflink/reflink
 
-[![npm version](https://badge.fury.io/js/%40refclone%2Frefclone.svg)](https://www.npmjs.com/package/@refclone/refclone)
-[![Build Status](https://github.com/pnpm/refclone/workflows/CI/badge.svg)](https://github.com/pnpm/refclone/actions)
+[![npm version](https://badge.fury.io/js/%40reflink%2Freflink.svg)](https://www.npmjs.com/package/@reflink/reflink)
+[![Build Status](https://github.com/pnpm/reflink/workflows/CI/badge.svg)](https://github.com/pnpm/reflink/actions)
 
 Copy-on-write file cloning for Node.js, powered by NAPI-RS and built upon [reflink-copy](https://github.com/cargo-bins/reflink-copy). This package supports a variety of platforms, including ARM and x86 architectures.
 
@@ -12,10 +12,10 @@ Copy-on-write file cloning for Node.js, powered by NAPI-RS and built upon [refli
 
 ## Installation
 
-Just install `@refclone/refclone` using your favorite package manager:
+Just install `@reflink/reflink` using your favorite package manager:
 
 ```bash
-pnpm add @refclone/refclone
+pnpm add @reflink/reflink
 ```
 
 ## Usage
@@ -27,7 +27,7 @@ The package provides both synchronous and asynchronous methods to clone files.
 First, import the package:
 
 ```typescript
-import { reflinkFileSync, reflinkFile } from '@refclone/refclone';
+import { reflinkFileSync, reflinkFile } from '@reflink/reflink';
 ```
 
 #### Synchronous Method

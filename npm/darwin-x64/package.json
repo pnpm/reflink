@@ -1,8 +1,8 @@
 {
-  "name": "@refclone/refclone-darwin-x64",
+  "name": "@reflink/reflink-darwin-x64",
   "version": "0.1.4",
   "repository": {
-    "url": "https://github.com/nachoaldamav/cross-reflink.git",
+    "url": "https://github.com/pnpm/reflink.git",
     "type": "git",
     "directory": "darwin-x64"
   },
@@ -12,9 +12,9 @@
   "cpu": [
     "x64"
   ],
-  "main": "refclone.darwin-x64.node",
+  "main": "reflink.darwin-x64.node",
   "files": [
-    "refclone.darwin-x64.node"
+    "reflink.darwin-x64.node"
   ],
   "license": "MIT",
   "engines": {
