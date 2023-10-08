@@ -1,6 +1,6 @@
 {
   "name": "@reflink/reflink-linux-x64-musl",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "repository": {
     "url": "https://github.com/pnpm/reflink.git",
     "type": "git",

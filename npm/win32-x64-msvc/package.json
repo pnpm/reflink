@@ -1,6 +1,6 @@
 {
   "name": "@reflink/reflink-win32-x64-msvc",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "repository": {
     "url": "https://github.com/pnpm/reflink.git",
     "type": "git",
