@@ -1,11 +1,4 @@
-import {
-  afterAll,
-  beforeAll,
-  beforeEach,
-  describe,
-  expect,
-  it,
-} from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { join } from 'path';
 import { reflinkFileSync, reflinkFile } from '../index.js';
 import { mkdir, rm, writeFile } from 'fs/promises';
@@ -151,11 +144,11 @@ describe('reflink', () => {
 
   it('should not fail with relative paths', async () => {
     const file = {
-      path: "file.txt",
-      content: "Hello World!",
-    }
+      path: 'file.txt',
+      content: 'Hello World!',
+    };
 
-    const dest = "file-copy.txt";
+    const dest = 'file-copy.txt';
 
     await rm(dest, { force: true });
     await writeFile(file.path, file.content);
@@ -167,20 +160,20 @@ describe('reflink', () => {
     expect(content).toBe(file.content);
 
     // clean both files
-    await rm("file.txt");
-    await rm("file-copy.txt");
+    await rm('file.txt');
+    await rm('file-copy.txt');
   });
 
   it('should not fail with nested relative paths', async () => {
     const file = {
-      path: "nested/file.txt",
-      content: "Hello World!",
-    }
+      path: 'nested/file.txt',
+      content: 'Hello World!',
+    };
 
-    const dest = "nested/file-copy.txt";
+    const dest = 'nested/file-copy.txt';
 
     await rm(dest, { force: true });
-    await mkdir("nested", { recursive: true });
+    await mkdir('nested', { recursive: true });
     await writeFile(file.path, file.content);
 
     await reflinkFile(file.path, dest);
@@ -190,7 +183,7 @@ describe('reflink', () => {
     expect(content).toBe(file.content);
 
     // clean both files
-    await rm("nested", { recursive: true });
+    await rm('nested', { recursive: true });
   });
 
   it('should correctly clone 1000 files (sync)', async () => {
