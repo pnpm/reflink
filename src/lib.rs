@@ -8,18 +8,6 @@ use std::path::PathBuf;
 use reflink_copy;
 use std::fs;
 
-// Return a napi::Result, so you can use napi::Error
-fn has_null_bytes(path: &PathBuf) -> Result<bool> {
-    match fs::read(path) {
-        Ok(content) => Ok(content.iter().any(|&byte| byte == 0)),
-        Err(io_err) => {
-            println!("Error reading file: {}", io_err.to_string());
-            Err(Error::from_reason(io_err.to_string()))
-        }
-    }
-}
-
-
 #[cfg(not(target_os = "windows"))]
 extern crate xattr;
 
@@ -61,20 +49,27 @@ impl Task for AsyncReflink {
                             return Err(Error::from_reason(err.to_string()));
                         }
                     }
-                    // Check for null bytes in the destination file
-                    let contains_null = has_null_bytes(&self.dst).map_err(|e| Error::from_reason(e.to_string()))?;
                     
-                    if !contains_null {
-                        return Ok(());
-                    } else {
-                        // Delete the destination and retry if it contains null bytes
+                    // Further validation: compare the contents of both files to make sure they are identical
+                    let src_contents = fs::read(&self.src).map_err(|e| Error::from_reason(e.to_string()))?;
+                    let dst_contents = fs::read(&self.dst).map_err(|e| Error::from_reason(e.to_string()))?;
+
+                    if src_contents != dst_contents {
+                        // Delete the destination and retry if the files are not identical
                         fs::remove_file(&self.dst).map_err(|e| Error::from_reason(e.to_string()))?;
                         retry_count += 1;
 
                         if retry_count >= 3 {  // Limit the number of retries
-                            return Err(Error::from_reason("Maximum retry attempts reached".to_string()));
+                            return Err(Error::from_reason(format!(
+                                "Max retries reached, could not create identical reflink for '{}' -> '{}'",
+                                self.src.display(),
+                                self.dst.display()
+                            )));
                         }
+                        continue; // Retry the operation
                     }
+
+                    return Ok(());
                 },
                 Err(err) => return Err(Error::from_reason(format!(
                     "{}, reflink '{}' -> '{}'",
@@ -90,6 +85,7 @@ impl Task for AsyncReflink {
         env.create_int32(0)
     }
 }
+
 
 // Async version
 #[napi(js_name = "reflinkFile")]
@@ -112,29 +108,30 @@ pub fn reflink_sync(env: Env, src: String, dst: String) -> Result<JsNumber> {
 
         match reflink_result {
             Ok(_) => {
-                // Check if the source and destination files differ
-                if let Ok(differs) = has_null_bytes(&dst_path) {
-                    if differs {
-                        if retry_count >= 3 {  // Max retry count
-                            return Err(Error::from_reason(format!(
-                                "Max retries reached, could not create identical reflink for '{}' -> '{}'",
-                                src_path.display(),
-                                dst_path.display()
-                            )));
-                        }
-                        // Remove the destination and retry
-                        if let Err(err) = fs::remove_file(&dst_path) {
-                            return Err(Error::from_reason(format!(
-                                "Failed to remove destination file '{}': {}",
-                                dst_path.display(),
-                                err.to_string()
-                            )));
-                        }
-                        retry_count += 1;
-                        continue; // Retry the operation
-                    }
-                }
+                // Further validation: compare the contents of both files to make sure they are identical
+                let src_contents = fs::read(&src_path).map_err(|e| Error::from_reason(e.to_string()))?;
+                let dst_contents = fs::read(&dst_path).map_err(|e| Error::from_reason(e.to_string()))?;
 
+                if src_contents != dst_contents {
+                    if retry_count >= 3 {  // Max retry count
+                        return Err(Error::from_reason(format!(
+                            "Max retries reached, could not create identical reflink for '{}' -> '{}'",
+                            src_path.display(),
+                            dst_path.display()
+                        )));
+                    }
+                    // Remove the destination and retry
+                    if let Err(err) = fs::remove_file(&dst_path) {
+                        return Err(Error::from_reason(format!(
+                            "Failed to remove destination file '{}': {}",
+                            dst_path.display(),
+                            err.to_string()
+                        )));
+                    }
+                    retry_count += 1;
+                    continue; // Retry the operation
+                }
+                
                 // Metadata and return handling here (existing code)
                 #[cfg(not(target_os = "windows"))]
                 {
@@ -154,4 +151,32 @@ pub fn reflink_sync(env: Env, src: String, dst: String) -> Result<JsNumber> {
             },
         }
     }
+}
+
+#[test]
+pub fn test_pyc_file() {
+    let src = std::path::Path::new("fixtures/sample.pyc");
+    let dst = std::path::Path::new("fixtures/sample.pyc.reflink");
+
+    // Remove the destination file if it already exists
+    if dst.exists() {
+        fs::remove_file(&dst).unwrap();
+    }
+
+    // Run the reflink operation
+    let result = reflink_copy::reflink(&src, &dst);
+    assert!(result.is_ok());
+
+    println!("Reflinked '{}' -> '{}'", src.display(), dst.display());
+
+    // Further validation: compare the contents of both files to make sure they are identical
+    let src_contents = fs::read(&src).expect("Failed to read source file");
+    let dst_contents = fs::read(&dst).expect("Failed to read destination file");
+
+    assert_eq!(src_contents, dst_contents);
+
+    // Remove the destination file
+    fs::remove_file(&dst).unwrap();
+
+    println!("File contents match, reflink operation successful")
 }

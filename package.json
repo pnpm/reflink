@@ -40,7 +40,8 @@
     "build": "napi build --platform --release",
     "build:debug": "napi build --platform",
     "prepublishOnly": "napi prepublish -t npm",
-    "test": "vitest",
+    "pretest": "yarn build",
+    "test": "cargo t && vitest",
     "universal": "napi universal",
     "version": "napi version"
   },

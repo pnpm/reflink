@@ -267,4 +267,44 @@ describe('reflink', () => {
       expect(destHash).toBe(file.hash);
     });
   });
+
+  it('should clone "sample.pyc" file correctly (sync)', async () => {
+    const srcFile = {
+      path: resolve(join('fixtures', 'sample.pyc')),
+      content: readFileSync(join('fixtures', 'sample.pyc')),
+    };
+
+    const destFile = {
+      path: join(sandboxDir, 'sample.pyc'),
+      hash: createHash('sha256').update(srcFile.content).digest('hex'),
+    };
+
+    reflinkFileSync(srcFile.path, destFile.path);
+
+    const destContent = readFileSync(destFile.path);
+    const destHash = createHash('sha256').update(destContent).digest('hex');
+
+    expect(destContent).toStrictEqual(srcFile.content);
+    expect(destHash).toStrictEqual(destFile.hash);
+  });
+
+  it('should clone "sample.pyc" file correctly (async)', async () => {
+    const srcFile = {
+      path: resolve(join('fixtures', 'sample.pyc')),
+      content: readFileSync(join('fixtures', 'sample.pyc')),
+    };
+
+    const destFile = {
+      path: join(sandboxDir, 'sample.pyc'),
+      hash: createHash('sha256').update(srcFile.content).digest('hex'),
+    };
+
+    await reflinkFile(srcFile.path, destFile.path);
+
+    const destContent = readFileSync(destFile.path);
+    const destHash = createHash('sha256').update(destContent).digest('hex');
+
+    expect(destContent).toStrictEqual(srcFile.content);
+    expect(destHash).toStrictEqual(destFile.hash);
+  });
 });
