@@ -198,3 +198,5 @@ Cargo.lock
 *.exe
 
 @reflink
+
+sandbox
