@@ -44,8 +44,5 @@
     "universal": "napi universal",
     "version": "napi version"
   },
-  "optionalDependencies": {
-    "@reflink/reflink-win32-x64-msvc": "file:./npm/win32-x64-msvc"
-  },
   "packageManager": "yarn@3.6.3"
 }
