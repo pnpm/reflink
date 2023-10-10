@@ -1,9 +1,9 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { join } from 'path';
+import { join, resolve } from 'path';
 import { reflinkFileSync, reflinkFile } from '../index.js';
 import { mkdir, rm, writeFile } from 'fs/promises';
 import { readFileSync } from 'fs';
-import { randomUUID } from 'crypto';
+import { randomUUID, createHash } from 'crypto';
 
 const sandboxDir = join(process.cwd(), `__reflink-tests-${randomUUID()}`);
 
@@ -11,14 +11,17 @@ const sandboxFiles = [
   {
     path: join(sandboxDir, 'file1.txt'),
     content: 'Hello World!',
+    sha: createHash('sha256').update('Hello World!').digest('hex'),
   },
   {
     path: join(sandboxDir, 'file2.txt'),
     content: 'Hello World!',
+    sha: createHash('sha256').update('Hello World!').digest('hex'),
   },
   {
     path: join(sandboxDir, 'file3.txt'),
     content: 'Hello World!',
+    sha: createHash('sha256').update('Hello World!').digest('hex'),
   },
 ];
 
@@ -215,6 +218,7 @@ describe('reflink', () => {
     const files = Array.from({ length: 1000 }, (_, i) => ({
       path: join(sandboxDir, `file${i}.txt`),
       content: 'Hello World!',
+      hash: createHash('sha256').update('Hello World!').digest('hex'),
     }));
 
     await Promise.all(
@@ -232,7 +236,35 @@ describe('reflink', () => {
         join(sandboxDir, `file${i}-copy.txt`),
         'utf-8'
       );
+      const hash = createHash('sha256').update(content).digest('hex');
       expect(content).toBe(file.content);
+      expect(hash).toBe(file.hash);
+    });
+  });
+
+  it('should keep the same hash when cloning a file more than 3,000 times', async () => {
+    const srcFile = {
+      path: resolve('./package.json'),
+      content: readFileSync(join('./package.json'), 'utf-8'),
+    };
+
+    const destFiles = Array.from({ length: 3_000 }, (_, i) => ({
+      path: join(sandboxDir, `file1-copy-${i}.txt`),
+      hash: createHash('sha256').update(srcFile.content).digest('hex'),
+    }));
+
+    const clonedFiles = await Promise.all(
+      destFiles.map(async (file) => {
+        await reflinkFile(srcFile.path, file.path);
+        return file;
+      })
+    );
+
+    clonedFiles.forEach((file) => {
+      const destContent = readFileSync(file.path, 'utf-8');
+      const destHash = createHash('sha256').update(destContent).digest('hex');
+      expect(destContent).toBe(srcFile.content);
+      expect(destHash).toBe(file.hash);
     });
   });
 });
