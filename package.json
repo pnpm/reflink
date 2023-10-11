@@ -42,6 +42,7 @@
     "prepublishOnly": "napi prepublish -t npm",
     "pretest": "yarn build",
     "test": "cargo t && vitest",
+    "bench": "node benchmark.mjs",
     "universal": "napi universal",
     "version": "napi version"
   },

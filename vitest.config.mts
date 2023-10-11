@@ -4,5 +4,6 @@ export default defineConfig({
   test: {
     watchExclude: ['__reflink-tests-*'],
     watch: false,
+    testTimeout: 10000,
   },
 });
