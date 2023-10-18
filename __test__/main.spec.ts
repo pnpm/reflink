@@ -255,16 +255,23 @@ describe('reflink', () => {
 
     const clonedFiles = await Promise.all(
       destFiles.map(async (file) => {
-        await reflinkFile(srcFile.path, file.path);
+        reflinkFileSync(srcFile.path, file.path);
         return file;
       })
     );
 
     clonedFiles.forEach((file) => {
+      const sourceContent = readFileSync(srcFile.path, 'utf-8');
+      const sourceHash = createHash('sha256')
+        .update(sourceContent)
+        .digest('hex');
+
+      expect(file.hash).toBe(sourceHash);
+
       const destContent = readFileSync(file.path, 'utf-8');
       const destHash = createHash('sha256').update(destContent).digest('hex');
-      expect(destContent).toBe(srcFile.content);
-      expect(destHash).toBe(file.hash);
+      expect(destContent).toBe(sourceContent);
+      expect(destHash).toBe(sourceHash);
     });
   });
 
@@ -283,6 +290,35 @@ describe('reflink', () => {
 
     const destContent = readFileSync(destFile.path);
     const destHash = createHash('sha256').update(destContent).digest('hex');
+
+    expect(destContent).toStrictEqual(srcFile.content);
+    expect(destHash).toStrictEqual(destFile.hash);
+  });
+
+  /**
+   * The issue with empty cloned files doesnt seem related to ASCII characters
+   */
+  it.skip('should clone "ascii-file.js" file correctly (sync)', async () => {
+    const srcFile = {
+      path: resolve(join('fixtures', 'ascii-file.js')),
+      content: readFileSync(join('fixtures', 'ascii-file.js')),
+    };
+
+    const destFile = {
+      path: join(sandboxDir, 'ascii-file.js'),
+      hash: createHash('sha256').update(srcFile.content).digest('hex'),
+    };
+
+    reflinkFileSync(srcFile.path, destFile.path);
+
+    const destContent = readFileSync(destFile.path);
+    const destHash = createHash('sha256').update(destContent).digest('hex');
+
+    const sourceContent = readFileSync(srcFile.path);
+    const sourceHash = createHash('sha256').update(sourceContent).digest('hex');
+
+    expect(sourceContent).toStrictEqual(srcFile.content);
+    expect(sourceHash).toStrictEqual(destFile.hash);
 
     expect(destContent).toStrictEqual(srcFile.content);
     expect(destHash).toStrictEqual(destFile.hash);
