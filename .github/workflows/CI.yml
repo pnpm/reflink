@@ -178,6 +178,7 @@ jobs:
         with:
           version: 8.10.0
           run_install: false
+          standalone: true
 
       - name: Install dependencies
         run: pnpm install
@@ -216,6 +217,7 @@ jobs:
         with:
           version: 8.10.0
           run_install: false
+          standalone: true
 
       - name: Install dependencies
         run: pnpm install
@@ -254,6 +256,7 @@ jobs:
         with:
           version: 8.10.0
           run_install: false
+          standalone: true
       
       - name: Install dependencies
         run: |
