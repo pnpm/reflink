@@ -380,7 +380,14 @@ jobs:
         with:
           node-version: 18
           check-latest: true
-          cache: pnpm
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8.10.0
+          run_install: false
+          standalone: true
+
       - name: Install dependencies
         run: pnpm install
       - name: Download all artifacts
@@ -398,11 +405,11 @@ jobs:
           if git log -1 --pretty=%B | grep "^[0-9]\+\.[0-9]\+\.[0-9]\+$";
           then
             echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-            npm publish --access public
+            pnpm publish --access public
           elif git log -1 --pretty=%B | grep "^[0-9]\+\.[0-9]\+\.[0-9]\+";
           then
             echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-            npm publish --tag next --access public
+            pnpm publish --tag next --access public
           else
             echo "Not a release, skipping publish"
           fi
