@@ -77,15 +77,26 @@ jobs:
         uses: actions/setup-node@v3
         if: ${{ !matrix.settings.docker }}
         with:
-          node-version: 18
-          check-latest: true
-          cache: pnpm
+          node-version: 20
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8.10.0
+          run_install: false
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
       - name: Install
         uses: dtolnay/rust-toolchain@stable
         if: ${{ !matrix.settings.docker }}
         with:
           toolchain: stable
           targets: ${{ matrix.settings.target }}
+
       - name: Cache cargo
         uses: actions/cache@v3
         with:
@@ -95,7 +106,9 @@ jobs:
             ~/.cargo/git/db/
             .cargo-cache
             target/
+            ${{ env.STORE_PATH }}
           key: ${{ matrix.settings.target }}-cargo-${{ matrix.settings.host }}
+
       - uses: goto-bus-stop/setup-zig@v2
         if: ${{ matrix.settings.target == 'armv7-unknown-linux-gnueabihf' }}
         with:
@@ -114,9 +127,8 @@ jobs:
         uses: actions/setup-node@v3
         if: matrix.settings.target == 'i686-pc-windows-msvc'
         with:
-          node-version: 18
+          node-version: 20
           check-latest: true
-          cache: pnpm
           architecture: x86
       - name: Build in docker
         uses: addnab/docker-run-action@v3
@@ -159,7 +171,13 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           check-latest: true
-          cache: pnpm
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8.10.0
+          run_install: false
+
       - name: Install dependencies
         run: pnpm install
       - name: Download artifacts
@@ -191,7 +209,13 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           check-latest: true
-          cache: pnpm
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8.10.0
+          run_install: false
+
       - name: Install dependencies
         run: pnpm install
       - name: Download artifacts
@@ -223,7 +247,13 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           check-latest: true
-          cache: pnpm
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8.10.0
+          run_install: false
+      
       - name: Install dependencies
         run: |
           pnpx @ialdama/jsonmod --key pnpm.supportedArchitectures.libc --values musl
@@ -276,6 +306,7 @@ jobs:
           image: node:${{ matrix.node }}-slim
           options: '--platform linux/arm64 -v ${{ github.workspace }}:/build -w /build'
           run: |
+            curl -fsSL https://get.pnpm.io/install.sh | sh -
             set -e
             pnpm test || true
             ls -la
@@ -310,6 +341,7 @@ jobs:
           image: node:lts-alpine
           options: '--platform linux/arm64 -v ${{ github.workspace }}:/build -w /build'
           run: |
+            curl -fsSL https://get.pnpm.io/install.sh | sh -
             set -e
             pnpm test || true
   publish:
