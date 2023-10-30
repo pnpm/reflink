@@ -6,6 +6,7 @@ env:
 permissions:
   contents: write
   id-token: write
+
 'on':
   push:
     branches:
@@ -19,6 +20,7 @@ permissions:
       - .editorconfig
       - docs/**
   pull_request: null
+
 jobs:
   build:
     strategy:
@@ -28,33 +30,33 @@ jobs:
           - host: macos-latest
             target: x86_64-apple-darwin
             build: |
-              yarn build
+              pnpm build
               strip -x *.node
           - host: windows-latest
-            build: yarn build
+            build: pnpm build
             target: x86_64-pc-windows-msvc
           - host: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian
             build: |-
               set -e &&
-              yarn build --target x86_64-unknown-linux-gnu &&
+              pnpm build --target x86_64-unknown-linux-gnu &&
               strip *.node
           - host: ubuntu-latest
             target: x86_64-unknown-linux-musl
             docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-alpine
-            build: set -e && yarn build && strip *.node
+            build: set -e && pnpm build && strip *.node
           - host: macos-latest
             target: aarch64-apple-darwin
             build: |
-              yarn build --target aarch64-apple-darwin
+              pnpm build --target aarch64-apple-darwin
               strip -x *.node
           - host: ubuntu-latest
             target: aarch64-unknown-linux-gnu
             docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian-aarch64
             build: |-
               set -e &&
-              yarn build --target aarch64-unknown-linux-gnu &&
+              pnpm build --target aarch64-unknown-linux-gnu &&
               aarch64-unknown-linux-gnu-strip *.node
           - host: ubuntu-latest
             target: aarch64-unknown-linux-musl
@@ -62,11 +64,11 @@ jobs:
             build: |-
               set -e &&
               rustup target add aarch64-unknown-linux-musl &&
-              yarn build --target aarch64-unknown-linux-musl &&
+              pnpm build --target aarch64-unknown-linux-musl &&
               /aarch64-linux-musl-cross/bin/aarch64-linux-musl-strip *.node
           - host: windows-latest
             target: aarch64-pc-windows-msvc
-            build: yarn build --target aarch64-pc-windows-msvc
+            build: pnpm build --target aarch64-pc-windows-msvc
     name: stable - ${{ matrix.settings.target }} - node@18
     runs-on: ${{ matrix.settings.host }}
     steps:
@@ -75,15 +77,27 @@ jobs:
         uses: actions/setup-node@v3
         if: ${{ !matrix.settings.docker }}
         with:
-          node-version: 18
-          check-latest: true
-          cache: yarn
+          node-version: 20
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8.10.0
+          run_install: false
+          standalone: true
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
       - name: Install
         uses: dtolnay/rust-toolchain@stable
         if: ${{ !matrix.settings.docker }}
         with:
           toolchain: stable
           targets: ${{ matrix.settings.target }}
+
       - name: Cache cargo
         uses: actions/cache@v3
         with:
@@ -93,7 +107,9 @@ jobs:
             ~/.cargo/git/db/
             .cargo-cache
             target/
+            ${{ env.STORE_PATH }}
           key: ${{ matrix.settings.target }}-cargo-${{ matrix.settings.host }}
+
       - uses: goto-bus-stop/setup-zig@v2
         if: ${{ matrix.settings.target == 'armv7-unknown-linux-gnueabihf' }}
         with:
@@ -104,17 +120,16 @@ jobs:
         shell: bash
       - name: Setup node x86
         if: matrix.settings.target == 'i686-pc-windows-msvc'
-        run: yarn config set supportedArchitectures.cpu "ia32"
+        run: pnpm dlx @ialdama/jsonmod --key pnpm.supportedArchitectures.cpu --values ia32 current
         shell: bash
       - name: Install dependencies
-        run: yarn install
+        run: pnpm install
       - name: Setup node x86
         uses: actions/setup-node@v3
         if: matrix.settings.target == 'i686-pc-windows-msvc'
         with:
-          node-version: 18
+          node-version: 20
           check-latest: true
-          cache: yarn
           architecture: x86
       - name: Build in docker
         uses: addnab/docker-run-action@v3
@@ -146,9 +161,9 @@ jobs:
           - host: windows-latest
             target: x86_64-pc-windows-msvc
         node:
-          - '14'
           - '16'
           - '18'
+          - '20'
     runs-on: ${{ matrix.settings.host }}
     steps:
       - uses: actions/checkout@v3
@@ -157,9 +172,16 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           check-latest: true
-          cache: yarn
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8.10.0
+          run_install: false
+          standalone: true
+
       - name: Install dependencies
-        run: yarn install
+        run: pnpm install
       - name: Download artifacts
         uses: actions/download-artifact@v3
         with:
@@ -169,7 +191,7 @@ jobs:
         run: ls -R .
         shell: bash
       - name: Test bindings
-        run: yarn test || true
+        run: pnpm test || true
   test-linux-x64-gnu-binding:
     name: Test bindings on Linux-x64-gnu - node@${{ matrix.node }}
     needs:
@@ -178,9 +200,9 @@ jobs:
       fail-fast: false
       matrix:
         node:
-          - '14'
           - '16'
           - '18'
+          - '20'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -189,9 +211,16 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           check-latest: true
-          cache: yarn
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8.10.0
+          run_install: false
+          standalone: true
+
       - name: Install dependencies
-        run: yarn install
+        run: pnpm install
       - name: Download artifacts
         uses: actions/download-artifact@v3
         with:
@@ -201,7 +230,7 @@ jobs:
         run: ls -R .
         shell: bash
       - name: Test bindings
-        run: docker run --rm -v $(pwd):/build -w /build node:${{ matrix.node }}-slim yarn test || true
+        run: docker run --rm -v $(pwd):/build -w /build node:${{ matrix.node }}-slim pnpm test || true
   test-linux-x64-musl-binding:
     name: Test bindings on x86_64-unknown-linux-musl - node@${{ matrix.node }}
     needs:
@@ -210,9 +239,9 @@ jobs:
       fail-fast: false
       matrix:
         node:
-          - '14'
           - '16'
           - '18'
+          - '20'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -221,11 +250,18 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           check-latest: true
-          cache: yarn
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8.10.0
+          run_install: false
+          standalone: true
+      
       - name: Install dependencies
         run: |
-          yarn config set supportedArchitectures.libc "musl"
-          yarn install
+          pnpm dlx @ialdama/jsonmod --key pnpm.supportedArchitectures.libc --values musl current
+          pnpm install
       - name: Download artifacts
         uses: actions/download-artifact@v3
         with:
@@ -235,7 +271,7 @@ jobs:
         run: ls -R .
         shell: bash
       - name: Test bindings
-        run: docker run --rm -v $(pwd):/build -w /build node:${{ matrix.node }}-alpine yarn test || true
+        run: docker run --rm -v $(pwd):/build -w /build node:${{ matrix.node }}-alpine pnpm test || true
   test-linux-aarch64-gnu-binding:
     name: Test bindings on aarch64-unknown-linux-gnu - node@${{ matrix.node }}
     needs:
@@ -244,9 +280,9 @@ jobs:
       fail-fast: false
       matrix:
         node:
-          - '14'
           - '16'
           - '18'
+          - '20'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -255,14 +291,22 @@ jobs:
         with:
           name: bindings-aarch64-unknown-linux-gnu
           path: .
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8.10.0
+          run_install: false
+          standalone: true
+
       - name: List packages
         run: ls -R .
         shell: bash
       - name: Install dependencies
         run: |
-          yarn config set supportedArchitectures.cpu "arm64"
-          yarn config set supportedArchitectures.libc "glibc"
-          yarn install
+          pnpm dlx @ialdama/jsonmod --key pnpm.supportedArchitectures.cpu --values arm64 current
+          pnpm dlx @ialdama/jsonmod --key pnpm.supportedArchitectures.libc --values glibc current
+          pnpm install
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
         with:
@@ -274,8 +318,9 @@ jobs:
           image: node:${{ matrix.node }}-slim
           options: '--platform linux/arm64 -v ${{ github.workspace }}:/build -w /build'
           run: |
+            curl -fsSL https://get.pnpm.io/install.sh | sh -
             set -e
-            yarn test || true
+            pnpm test || true
             ls -la
   test-linux-aarch64-musl-binding:
     name: Test bindings on aarch64-unknown-linux-musl - node@${{ matrix.node }}
@@ -289,14 +334,22 @@ jobs:
         with:
           name: bindings-aarch64-unknown-linux-musl
           path: .
+      
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8.10.0
+          run_install: false
+          standalone: true
+
       - name: List packages
         run: ls -R .
         shell: bash
       - name: Install dependencies
         run: |
-          yarn config set supportedArchitectures.cpu "arm64"
-          yarn config set supportedArchitectures.libc "musl"
-          yarn install
+          pnpm dlx @ialdama/jsonmod --key pnpm.supportedArchitectures.cpu --values arm64 current
+          pnpm dlx @ialdama/jsonmod --key pnpm.supportedArchitectures.libc --values musl current
+          pnpm install
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
         with:
@@ -308,8 +361,9 @@ jobs:
           image: node:lts-alpine
           options: '--platform linux/arm64 -v ${{ github.workspace }}:/build -w /build'
           run: |
+            curl -fsSL https://get.pnpm.io/install.sh | sh -
             set -e
-            yarn test || true
+            pnpm test || true
   publish:
     name: Publish
     runs-on: ubuntu-latest
@@ -326,15 +380,22 @@ jobs:
         with:
           node-version: 18
           check-latest: true
-          cache: yarn
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8.10.0
+          run_install: false
+          standalone: true
+
       - name: Install dependencies
-        run: yarn install
+        run: pnpm install
       - name: Download all artifacts
         uses: actions/download-artifact@v3
         with:
           path: artifacts
       - name: Move artifacts
-        run: yarn artifacts
+        run: pnpm artifacts
       - name: List packages
         run: ls -R ./npm
         shell: bash
@@ -344,11 +405,11 @@ jobs:
           if git log -1 --pretty=%B | grep "^[0-9]\+\.[0-9]\+\.[0-9]\+$";
           then
             echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-            npm publish --access public
+            pnpm publish --access public
           elif git log -1 --pretty=%B | grep "^[0-9]\+\.[0-9]\+\.[0-9]\+";
           then
             echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-            npm publish --tag next --access public
+            pnpm publish --tag next --access public
           else
             echo "Not a release, skipping publish"
           fi

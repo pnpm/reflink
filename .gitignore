@@ -200,3 +200,4 @@ Cargo.lock
 @reflink
 
 sandbox
+*.json.bak
