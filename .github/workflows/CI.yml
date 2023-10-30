@@ -119,7 +119,7 @@ jobs:
         shell: bash
       - name: Setup node x86
         if: matrix.settings.target == 'i686-pc-windows-msvc'
-        run: pnpx @ialdama/jsonmod --key pnpm.supportedArchitectures.cpu --values ia32
+        run: pnpx @ialdama/jsonmod --key pnpm.supportedArchitectures.cpu --values ia32 current
         shell: bash
       - name: Install dependencies
         run: pnpm install
@@ -256,7 +256,7 @@ jobs:
       
       - name: Install dependencies
         run: |
-          pnpx @ialdama/jsonmod --key pnpm.supportedArchitectures.libc --values musl
+          pnpx @ialdama/jsonmod --key pnpm.supportedArchitectures.libc --values musl current
           pnpm install
       - name: Download artifacts
         uses: actions/download-artifact@v3
@@ -292,8 +292,8 @@ jobs:
         shell: bash
       - name: Install dependencies
         run: |
-          pnpx @ialdama/jsonmod --key pnpm.supportedArchitectures.cpu --values arm64
-          pnpx @ialdama/jsonmod --key pnpm.supportedArchitectures.libc --values glibc
+          pnpx @ialdama/jsonmod --key pnpm.supportedArchitectures.cpu --values arm64 current
+          pnpx @ialdama/jsonmod --key pnpm.supportedArchitectures.libc --values glibc current
           pnpm install
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -327,8 +327,8 @@ jobs:
         shell: bash
       - name: Install dependencies
         run: |
-          pnpx @ialdama/jsonmod --key pnpm.supportedArchitectures.cpu --values arm64
-          pnpx @ialdama/jsonmod --key pnpm.supportedArchitectures.libc --values musl
+          pnpx @ialdama/jsonmod --key pnpm.supportedArchitectures.cpu --values arm64 current
+          pnpx @ialdama/jsonmod --key pnpm.supportedArchitectures.libc --values musl current
           pnpm install
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
