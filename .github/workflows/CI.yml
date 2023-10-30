@@ -84,6 +84,7 @@ jobs:
         with:
           version: 8.10.0
           run_install: false
+          standalone: true
 
       - name: Get pnpm store directory
         shell: bash
