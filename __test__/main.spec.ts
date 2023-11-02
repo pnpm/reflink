@@ -1,79 +1,91 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it } from 'vitest';
 import { join, resolve } from 'path';
-import { reflinkFileSync, reflinkFile } from '../index.js';
 import { mkdir, rm, writeFile } from 'fs/promises';
 import { readFileSync } from 'fs';
 import { randomUUID, createHash } from 'crypto';
+import { rimraf } from 'rimraf';
+import { reflinkFileSync, reflinkFile } from '../index.js';
 
-const sandboxDir = join(process.cwd(), `__reflink-tests-${randomUUID()}`);
+const sandboxDir = () => join(process.cwd(), `__reflink-tests-${randomUUID()}`);
 
 const sandboxFiles = [
   {
-    path: join(sandboxDir, 'file1.txt'),
+    path: 'file1.txt',
     content: 'Hello World!',
     sha: createHash('sha256').update('Hello World!').digest('hex'),
   },
   {
-    path: join(sandboxDir, 'file2.txt'),
+    path: 'file2.txt',
     content: 'Hello World!',
     sha: createHash('sha256').update('Hello World!').digest('hex'),
   },
   {
-    path: join(sandboxDir, 'file3.txt'),
+    path: 'file3.txt',
     content: 'Hello World!',
     sha: createHash('sha256').update('Hello World!').digest('hex'),
   },
 ];
 
+const sandboxDirectories: string[] = [];
+
+async function prepare(dir: string) {
+  await mkdir(dir, { recursive: true });
+
+  sandboxDirectories.push(dir);
+
+  return Promise.all(
+    sandboxFiles.map(async (file) => {
+      await writeFile(join(dir, file.path), file.content);
+      return {
+        ...file,
+        path: join(dir, file.path),
+      };
+    })
+  );
+}
+
 describe('reflink', () => {
-  beforeAll(async () => {
-    await mkdir(sandboxDir, { recursive: true });
-  });
-
   afterAll(async () => {
-    await rm(sandboxDir, { recursive: true, force: true });
-  });
-
-  beforeEach(async () => {
-    // remove the sandbox directory and recreate it
-    await rm(sandboxDir, { recursive: true, force: true });
-    await mkdir(sandboxDir, { recursive: true });
-
-    // create the files again
     await Promise.all(
-      sandboxFiles.map(async (file) => {
-        await writeFile(file.path, file.content);
+      sandboxDirectories.map(async (dir) => {
+        await rimraf(dir).catch(() => {});
       })
     );
   });
 
-  it('should correctly clone a file (sync)', () => {
-    const file = sandboxFiles[0];
+  it('should correctly clone a file (sync)', async () => {
+    const dir = sandboxDir();
+    const files = await prepare(dir);
+    const file = files[0];
 
-    reflinkFileSync(file.path, join(sandboxDir, 'file1-copy.txt'));
+    reflinkFileSync(file.path, join(dir, 'file1-copy.txt'));
 
-    const content = readFileSync(join(sandboxDir, 'file1-copy.txt'), 'utf-8');
+    const content = readFileSync(join(dir, 'file1-copy.txt'), 'utf-8');
 
     expect(content).toBe(file.content);
   });
 
   it('should correctly clone a file (async)', async () => {
-    const file = sandboxFiles[0];
+    const dir = sandboxDir();
+    const files = await prepare(dir);
+    const file = files[0];
 
-    await reflinkFile(file.path, join(sandboxDir, 'file1-copy.txt'));
+    await reflinkFile(file.path, join(dir, 'file1-copy.txt'));
 
-    const content = readFileSync(join(sandboxDir, 'file1-copy.txt'), 'utf-8');
+    const content = readFileSync(join(dir, 'file1-copy.txt'), 'utf-8');
 
     expect(content).toBe(file.content);
   });
 
   it('should keep the same content in source file after editing the cloned file', async () => {
-    const file = sandboxFiles[0];
+    const dir = sandboxDir();
+    const files = await prepare(dir);
+    const file = files[0];
 
-    await reflinkFile(file.path, join(sandboxDir, 'file1-copy.txt'));
+    await reflinkFile(file.path, join(dir, 'file1-copy.txt'));
 
     await writeFile(
-      join(sandboxDir, 'file1-copy.txt'),
+      join(dir, 'file1-copy.txt'),
       file.content + '\nAdded content!'
     );
 
@@ -82,65 +94,84 @@ describe('reflink', () => {
     expect(originalContent).toBe(file.content);
   });
 
-  it('should fail if the source file does not exist (sync)', () => {
+  it('should fail if the source file does not exist (sync)', async () => {
+    const dir = sandboxDir();
+    await prepare(dir);
+
     expect(() => {
       reflinkFileSync(
-        join(sandboxDir, 'file-does-not-exist.txt'),
-        join(sandboxDir, 'file1-copy.txt')
+        join(dir, 'file-does-not-exist.txt'),
+        join(dir, 'file1-copy.txt')
       );
     }).toThrow();
   });
 
   it('should fail if the source file does not exist (async)', async () => {
+    const dir = sandboxDir();
+    await prepare(dir);
+
     await expect(
       reflinkFile(
-        join(sandboxDir, 'file-does-not-exist.txt'),
-        join(sandboxDir, 'file1-copy.txt')
+        join(dir, 'file-does-not-exist.txt'),
+        join(dir, 'file1-copy.txt')
       )
     ).rejects.toThrow();
   });
 
-  it('should fail if the destination file already exists (sync)', () => {
+  it('should fail if the destination file already exists (sync)', async () => {
+    const dir = sandboxDir();
+    const sandboxFiles = await prepare(dir);
+
     expect(() => {
       reflinkFileSync(sandboxFiles[0].path, sandboxFiles[1].path);
     }).toThrow();
   });
 
   it('should fail if the destination file already exists (async)', async () => {
+    const dir = sandboxDir();
+    const sandboxFiles = await prepare(dir);
     await expect(
       reflinkFile(sandboxFiles[0].path, sandboxFiles[1].path)
     ).rejects.toThrow();
   });
 
-  it('should fail if the source file is a directory (sync)', () => {
+  it('should fail if the source file is a directory (sync)', async () => {
+    const dir = sandboxDir();
+    const sandboxFiles = await prepare(dir);
     expect(() => {
-      reflinkFileSync(sandboxDir, sandboxFiles[1].path);
+      reflinkFileSync(dir, sandboxFiles[1].path);
     }).toThrow();
   });
 
   it('should fail if the source file is a directory (async)', async () => {
-    await expect(
-      reflinkFile(sandboxDir, sandboxFiles[1].path)
-    ).rejects.toThrow();
+    const dir = sandboxDir();
+    const sandboxFiles = await prepare(dir);
+    await expect(reflinkFile(dir, sandboxFiles[1].path)).rejects.toThrow();
   });
 
-  it('should fail if the source and destination files are the same (sync)', () => {
+  it('should fail if the source and destination files are the same (sync)', async () => {
+    const dir = sandboxDir();
+    const sandboxFiles = await prepare(dir);
     expect(() => {
       reflinkFileSync(sandboxFiles[0].path, sandboxFiles[0].path);
     }).toThrow();
   });
 
   it('should fail if the source and destination files are the same (async)', async () => {
+    const dir = sandboxDir();
+    const sandboxFiles = await prepare(dir);
     await expect(
       reflinkFile(sandboxFiles[0].path, sandboxFiles[0].path)
     ).rejects.toThrow();
   });
 
-  it('should fail if the destination parent directory does not exist (sync)', () => {
+  it('should fail if the destination parent directory does not exist (sync)', async () => {
+    const dir = sandboxDir();
+    const sandboxFiles = await prepare(dir);
     expect(() => {
       reflinkFileSync(
         sandboxFiles[0].path,
-        join(sandboxDir, 'does-not-exist', 'file1-copy.txt')
+        join(dir, 'does-not-exist', 'file1-copy.txt')
       );
     }).toThrow();
   });
@@ -190,8 +221,11 @@ describe('reflink', () => {
   });
 
   it('should correctly clone 1000 files (sync)', async () => {
+    const dir = sandboxDir();
+    const sandboxFiles = await prepare(dir);
+
     const files = Array.from({ length: 1000 }, (_, i) => ({
-      path: join(sandboxDir, `file${i}.txt`),
+      path: join(dir, `file${i}.txt`),
       content: 'Hello World!',
     }));
 
@@ -201,22 +235,21 @@ describe('reflink', () => {
 
     await Promise.all(
       files.map(async (file, i) =>
-        reflinkFileSync(file.path, join(sandboxDir, `file${i}-copy.txt`))
+        reflinkFileSync(file.path, join(dir, `file${i}-copy.txt`))
       )
     );
 
     files.forEach((file, i) => {
-      const content = readFileSync(
-        join(sandboxDir, `file${i}-copy.txt`),
-        'utf-8'
-      );
+      const content = readFileSync(join(dir, `file${i}-copy.txt`), 'utf-8');
       expect(content).toBe(file.content);
     });
   });
 
   it('should correctly clone 1000 files (async)', async () => {
+    const dir = sandboxDir();
+    const sandboxFiles = await prepare(dir);
     const files = Array.from({ length: 1000 }, (_, i) => ({
-      path: join(sandboxDir, `file${i}.txt`),
+      path: join(dir, `file${i}.txt`),
       content: 'Hello World!',
       hash: createHash('sha256').update('Hello World!').digest('hex'),
     }));
@@ -227,15 +260,12 @@ describe('reflink', () => {
 
     await Promise.all(
       files.map(async (file, i) =>
-        reflinkFile(file.path, join(sandboxDir, `file${i}-copy.txt`))
+        reflinkFile(file.path, join(dir, `file${i}-copy.txt`))
       )
     );
 
     files.forEach((file, i) => {
-      const content = readFileSync(
-        join(sandboxDir, `file${i}-copy.txt`),
-        'utf-8'
-      );
+      const content = readFileSync(join(dir, `file${i}-copy.txt`), 'utf-8');
       const hash = createHash('sha256').update(content).digest('hex');
       expect(content).toBe(file.content);
       expect(hash).toBe(file.hash);
@@ -243,13 +273,15 @@ describe('reflink', () => {
   });
 
   it('should keep the same hash when cloning a file more than 3,000 times', async () => {
+    const dir = sandboxDir();
+    const sandboxFiles = await prepare(dir);
     const srcFile = {
       path: resolve('./package.json'),
       content: readFileSync(join('./package.json'), 'utf-8'),
     };
 
     const destFiles = Array.from({ length: 3_000 }, (_, i) => ({
-      path: join(sandboxDir, `file1-copy-${i}.txt`),
+      path: join(dir, `file1-copy-${i}.txt`),
       hash: createHash('sha256').update(srcFile.content).digest('hex'),
     }));
 
@@ -276,13 +308,15 @@ describe('reflink', () => {
   });
 
   it('should clone "sample.pyc" file correctly (sync)', async () => {
+    const dir = sandboxDir();
+    const sandboxFiles = await prepare(dir);
     const srcFile = {
       path: resolve(join('fixtures', 'sample.pyc')),
       content: readFileSync(join('fixtures', 'sample.pyc')),
     };
 
     const destFile = {
-      path: join(sandboxDir, 'sample.pyc'),
+      path: join(dir, 'sample.pyc'),
       hash: createHash('sha256').update(srcFile.content).digest('hex'),
     };
 
@@ -299,13 +333,15 @@ describe('reflink', () => {
    * The issue with empty cloned files doesnt seem related to ASCII characters
    */
   it.skip('should clone "ascii-file.js" file correctly (sync)', async () => {
+    const dir = sandboxDir();
+    const sandboxFiles = await prepare(dir);
     const srcFile = {
       path: resolve(join('fixtures', 'ascii-file.js')),
       content: readFileSync(join('fixtures', 'ascii-file.js')),
     };
 
     const destFile = {
-      path: join(sandboxDir, 'ascii-file.js'),
+      path: join(dir, 'ascii-file.js'),
       hash: createHash('sha256').update(srcFile.content).digest('hex'),
     };
 
@@ -325,13 +361,15 @@ describe('reflink', () => {
   });
 
   it('should clone "sample.pyc" file correctly (async)', async () => {
+    const dir = sandboxDir();
+    const sandboxFiles = await prepare(dir);
     const srcFile = {
       path: resolve(join('fixtures', 'sample.pyc')),
       content: readFileSync(join('fixtures', 'sample.pyc')),
     };
 
     const destFile = {
-      path: join(sandboxDir, 'sample.pyc'),
+      path: join(dir, 'sample.pyc'),
       hash: createHash('sha256').update(srcFile.content).digest('hex'),
     };
 
