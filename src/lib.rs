@@ -2,7 +2,7 @@
 
 #[macro_use]
 extern crate napi_derive;
-use copy_on_write::reflink_file_sync as reflink;
+use copy_on_write::reflink_file_sync;
 use napi::{bindgen_prelude::AsyncTask, Env, Error, JsNumber, Result, Task};
 use std::path::PathBuf;
 
@@ -25,7 +25,7 @@ impl Task for AsyncReflink {
           Error::from_reason("Invalid UTF-8 sequence in destination path".to_string())
         })?;
 
-        match reflink(src_str, dst_str) {
+        match reflink_file_sync(src_str, dst_str) {
             Ok(_) => {
                 Ok(())
             },
@@ -54,7 +54,7 @@ pub fn reflink_task(src: String, dst: String) -> AsyncTask<AsyncReflink> {
 // Sync version
 #[napi(js_name = "reflinkFileSync")]
 pub fn reflink_sync(env: Env, src: String, dst: String) -> Result<JsNumber> {
-    match reflink(&src, &dst) {
+    match reflink_file_sync(src, dst) {
         Ok(_) => Ok(env.create_int32(0)?),
         Err(err) => Err(Error::from_reason(format!(
             "{}, reflink '{}' -> '{}'",
@@ -73,15 +73,15 @@ pub fn test_pyc_file() {
     let dst_path = std::path::Path::new(dst);
 
     // Remove the destination file if it already exists
-    if dst_path.exists() {
+    if dst_path.try_exists().unwrap() {
         std::fs::remove_file(&dst).unwrap();
     }
 
     // Run the reflink operation
-    let result = reflink(&src, &dst);
+    let result = reflink_file_sync(src, dst);
     assert!(result.is_ok());
 
-    println!("Reflinked '{}' -> '{}'", src, dst);
+    println!("Reflinked {src:?} -> {dst:?}");
 
     // Further validation: compare the contents of both files to make sure they are identical
     let src_contents = std::fs::read(&src).expect("Failed to read source file");
