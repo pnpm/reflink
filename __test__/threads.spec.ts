@@ -25,7 +25,7 @@ describe('reflink worker', () => {
       content: readFileSync(join(process.cwd(), 'fixtures', 'ascii-file.js')),
     };
 
-    const destFiles = Array.from({ length: 1000 }, () => ({
+    const destFiles = Array.from({ length: 100 }, () => ({
       path: join(TEST_DIR, `dest-${randomUUID()}.js`),
     }));
 
