@@ -402,17 +402,24 @@ jobs:
       - name: Publish
         run: |
           npm config set provenance true
-          if git log -1 --pretty=%B | grep "^[0-9]\+\.[0-9]\+\.[0-9]\+$";
-          then
+          COMMIT_HASH=$(git rev-parse --short HEAD)
+          if [ "${GITHUB_REF##*/}" = "main" ]; then
+            if git log -1 --pretty=%B | grep -E "^[0-9]+\.[0-9]+\.[0-9]+$"; then
+              echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+              pnpm publish --access public
+            elif git log -1 --pretty=%B | grep -E "^[0-9]+\.[0-9]+\.[0-9]+"; then
+              echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+              pnpm publish --tag next --access public
+            else
+              echo "Not a release, skipping publish"
+            fi
+          elif [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
+            jq --arg hash "$COMMIT_HASH" '.version = $hash' package.json > temp.json && mv temp.json package.json
+            pnpm run version
             echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-            pnpm publish --access public
-          elif git log -1 --pretty=%B | grep "^[0-9]\+\.[0-9]\+\.[0-9]\+";
-          then
-            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-            pnpm publish --tag next --access public
-          else
-            echo "Not a release, skipping publish"
+            pnpm publish --tag canary --access public
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      
