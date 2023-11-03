@@ -47,7 +47,7 @@ await reflinkFile('source.txt', 'destination.txt');
 This package is tested using `vitest`. You can run the tests locally using:
 
 ```bash
-yarn install
-yarn build
-yarn test
+pnpm install
+pnpm build
+pnpm test
 ```
