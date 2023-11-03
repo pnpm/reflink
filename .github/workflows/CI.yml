@@ -414,10 +414,14 @@ jobs:
               echo "Not a release, skipping publish"
             fi
           elif [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
-            jq --arg hash "$COMMIT_HASH" '.version = $hash' package.json > temp.json && mv temp.json package.json
-            pnpm run version
-            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-            pnpm publish --tag canary --access public
+            if git log -1 --pretty=%B | grep -E "^[0-9]+\.[0-9]+\.[0-9]+$"; then
+              jq --arg hash "$COMMIT_HASH" '.version = $hash' package.json > temp.json && mv temp.json package.json
+              pnpm run version
+              echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+              pnpm publish --tag canary --access public --no-git-checks
+            else
+              echo "Not a release, skipping publish"
+            fi
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
