@@ -402,17 +402,36 @@ jobs:
       - name: Publish
         run: |
           npm config set provenance true
-          if git log -1 --pretty=%B | grep "^[0-9]\+\.[0-9]\+\.[0-9]\+$";
-          then
-            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-            pnpm publish --access public
-          elif git log -1 --pretty=%B | grep "^[0-9]\+\.[0-9]\+\.[0-9]\+";
-          then
-            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-            pnpm publish --tag next --access public
+          COMMIT_HASH=$(git rev-parse --short HEAD)
+          COMMIT_MESSAGE=$(git log -1 --pretty=%B)
+          RELEASE_TYPE=$(echo $COMMIT_MESSAGE | grep -oE "^release \(([a-zA-Z]+)\): [0-9]+\.[0-9]+\.[0-9]+$" | grep -oE "\(([a-zA-Z]+)\)" | tr -d '()')
+      
+          if [ "${GITHUB_REF##*/}" = "main" ]; then
+            if [[ $COMMIT_MESSAGE == release* ]]; then
+              # Use a default release type of 'latest' if no type is specified in the commit message
+              RELEASE_TYPE=${RELEASE_TYPE:-latest}
+              echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+              pnpm publish --tag $RELEASE_TYPE --access public
+            else
+              echo "Commit does not start with 'release', skipping publish"
+            fi
+          elif [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
+            if [[ $COMMIT_MESSAGE == release* ]]; then
+              # Use a default release type of 'canary' if no type is specified in the commit message
+              RELEASE_TYPE=${RELEASE_TYPE:-canary}
+              jq --arg hash "$COMMIT_HASH" '.version = $hash' package.json > temp.json && mv temp.json package.json
+              pnpm run version
+              echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+              pnpm publish --tag $RELEASE_TYPE --access public --no-git-checks
+            else
+              echo "PR does not start with 'release', skipping publish"
+            fi
           else
             echo "Not a release, skipping publish"
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      
+      
+      
