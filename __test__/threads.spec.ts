@@ -65,7 +65,7 @@ describe('reflink worker', () => {
     }
   });
 
-  it('clone the same file to different location simultaneously (sync)', async () => {
+  it('clone the same file to different location simultaneously (async)', async () => {
     const src = {
       path: join(process.cwd(), 'fixtures', 'ascii-file.js'),
       content: readFileSync(join(process.cwd(), 'fixtures', 'ascii-file.js')),

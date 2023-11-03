@@ -7,11 +7,11 @@ version = "0.0.0"
 crate-type = ["cdylib"]
 
 [dependencies]
+copy_on_write = "0.1.1"
 futures = "0.3.28"
 # Default enable napi4 feature, see https://nodejs.org/api/n-api.html#node-api-version-matrix
 napi = { version = "2.12.2", default-features = false, features = ["napi4"] }
 napi-derive = "2.12.2"
-reflink-copy = { version = "0.1.10" }
 
 [build-dependencies]
 napi-build = "2.0.1"
