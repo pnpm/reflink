@@ -407,7 +407,7 @@ jobs:
           RELEASE_TYPE=$(echo $COMMIT_MESSAGE | grep -oE "^release \(([a-zA-Z]+)\): [0-9]+\.[0-9]+\.[0-9]+$" | grep -oE "\(([a-zA-Z]+)\)" | tr -d '()')
       
           if [ "${GITHUB_REF##*/}" = "main" ]; then
-            if [[ $COMMIT_MESSAGE == release* ]]; then
+            if [[ $COMMIT_MESSAGE =~ ^release(\s\(.+\))?: ]]; then
               # Use a default release type of 'latest' if no type is specified in the commit message
               RELEASE_TYPE=${RELEASE_TYPE:-latest}
               echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
@@ -416,7 +416,7 @@ jobs:
               echo "Commit does not start with 'release', skipping publish"
             fi
           elif [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
-            if [[ $COMMIT_MESSAGE == release* ]]; then
+            if [[ $COMMIT_MESSAGE =~ ^release(\s\(.+\))?: ]]; then
               # Use a default release type of 'canary' if no type is specified in the commit message
               RELEASE_TYPE=${RELEASE_TYPE:-canary}
               jq --arg hash "$COMMIT_HASH" '.version = $hash' package.json > temp.json && mv temp.json package.json
