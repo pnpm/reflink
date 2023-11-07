@@ -416,7 +416,7 @@ jobs:
               # Use a default release type of 'latest' if no type is specified in the commit message
               RELEASE_TYPE=${RELEASE_TYPE:-latest}
               echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-              pnpm publish --tag $RELEASE_TYPE --access public
+              npm publish --tag $RELEASE_TYPE --access public --no-git-checks
             else
               echo "Commit does not start with 'release', skipping publish"
             fi
@@ -435,12 +435,14 @@ jobs:
               jq --arg newVersion "$NEW_VERSION" '.version = $newVersion' package.json > temp.json && mv temp.json package.json
               
               echo "Updated version to $NEW_VERSION"
+
+              pnpm run version
               
               # Set up .npmrc config file for authentication
               echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
               
               # Publish the package with the new canary version
-              pnpm publish --tag $RELEASE_TYPE --access public --no-git-checks
+              npm publish --tag $RELEASE_TYPE --access public --no-git-checks
             else
               echo "PR does not start with 'release', skipping publish"
             fi
