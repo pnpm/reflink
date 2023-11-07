@@ -403,7 +403,12 @@ jobs:
         run: |
           npm config set provenance true
           COMMIT_HASH=$(git rev-parse --short HEAD)
-          COMMIT_MESSAGE=$(git log -1 --pretty=%B)
+          # If it's a pull request event, use the PR title or the head commit message
+          if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
+            COMMIT_MESSAGE=$(jq --raw-output .pull_request.title "$GITHUB_EVENT_PATH")
+          else
+            COMMIT_MESSAGE=$(git log -1 --pretty=%B)
+          fi
           RELEASE_TYPE=$(echo $COMMIT_MESSAGE | grep -oE "\(([a-zA-Z]+)\)" | tr -d '()')
       
           if [ "${GITHUB_REF##*/}" = "main" ]; then
