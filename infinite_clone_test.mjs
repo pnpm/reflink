@@ -31,7 +31,6 @@ async function main() {
     for (let i = 0; i < 1000; i++) {
       const destPath = path.join('./sandbox', `file1-copy-${i}.txt`);
 
-      // Assume reflinkFile is your function that performs the file cloning operation
       await reflinkFile(srcFile.path, destPath);
 
       const destContent = await fs.readFile(destPath, 'utf-8');
