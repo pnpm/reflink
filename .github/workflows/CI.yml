@@ -82,7 +82,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: 8.10.0
+          version: 8.10.2
           run_install: false
           standalone: true
 
@@ -176,7 +176,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: 8.10.0
+          version: 8.10.2
           run_install: false
           standalone: true
 
@@ -215,7 +215,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: 8.10.0
+          version: 8.10.2
           run_install: false
           standalone: true
 
@@ -254,7 +254,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: 8.10.0
+          version: 8.10.2
           run_install: false
           standalone: true
       
@@ -295,7 +295,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: 8.10.0
+          version: 8.10.2
           run_install: false
           standalone: true
 
@@ -338,7 +338,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: 8.10.0
+          version: 8.10.2
           run_install: false
           standalone: true
 
@@ -384,7 +384,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: 8.10.0
+          version: 8.10.2
           run_install: false
           standalone: true
 
@@ -416,7 +416,7 @@ jobs:
               # Use a default release type of 'latest' if no type is specified in the commit message
               RELEASE_TYPE=${RELEASE_TYPE:-latest}
               echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-              npm publish --tag $RELEASE_TYPE --access public --no-git-checks
+              npm publish --tag $RELEASE_TYPE --access public
             else
               echo "Commit does not start with 'release', skipping publish"
             fi
@@ -442,7 +442,7 @@ jobs:
               echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
               
               # Publish the package with the new canary version
-              npm publish --tag $RELEASE_TYPE --access public --no-git-checks
+              npm publish --tag $RELEASE_TYPE --access public
             else
               echo "PR does not start with 'release', skipping publish"
             fi
