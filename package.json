@@ -1,6 +1,6 @@
 {
   "name": "@reflink/reflink",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "main": "index.js",
   "types": "index.d.ts",
   "repository": {
@@ -41,7 +41,7 @@
     "build:debug": "napi build --platform",
     "prepublishOnly": "napi prepublish -t npm",
     "pretest": "pnpm build",
-    "test": "cargo t && vitest",
+    "test": "cargo t && vitest && rimraf -g __reflink-tests-*",
     "bench": "node benchmark.mjs",
     "universal": "napi universal",
     "version": "napi version"
