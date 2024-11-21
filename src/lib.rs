@@ -17,14 +17,11 @@ impl Task for AsyncReflink {
 
     fn compute(&mut self) -> Result<Self::Output> {
         match reflink_file_sync(&self.src, &self.dst) {
-            Ok(_) => {
-                Ok(())
-            },
-            Err(err) => return Err(Error::from_reason(format!(
-                "{}, reflink '{}' -> '{}'",
-                err.to_string(),
-                self.src,
-                self.dst
+            Ok(_) => Ok(()),
+            Err(err) => Err(Error::from_reason(format!(
+                "{err}, reflink '{src}' -> '{dst}'",
+                src = self.src,
+                dst = self.dst,
             ))),
         }
     }
@@ -46,10 +43,7 @@ pub fn reflink_sync(env: Env, src: String, dst: String) -> Result<JsNumber> {
     match reflink_file_sync(&src, &dst) {
         Ok(_) => Ok(env.create_int32(0)?),
         Err(err) => Err(Error::from_reason(format!(
-            "{}, reflink '{}' -> '{}'",
-            err.to_string(),
-            src,
-            dst
+            "{err}, reflink '{src}' -> '{dst}'"
         ))),
     }
 }
@@ -63,7 +57,7 @@ pub fn test_pyc_file() {
 
     // Remove the destination file if it already exists
     if dst_path.try_exists().unwrap() {
-        std::fs::remove_file(&dst).unwrap();
+        std::fs::remove_file(dst).unwrap();
     }
 
     // Run the reflink operation
@@ -73,13 +67,13 @@ pub fn test_pyc_file() {
     println!("Reflinked {src:?} -> {dst:?}");
 
     // Further validation: compare the contents of both files to make sure they are identical
-    let src_contents = std::fs::read(&src).expect("Failed to read source file");
-    let dst_contents = std::fs::read(&dst).expect("Failed to read destination file");
+    let src_contents = std::fs::read(src).expect("Failed to read source file");
+    let dst_contents = std::fs::read(dst).expect("Failed to read destination file");
 
     assert_eq!(src_contents, dst_contents);
 
     // Remove the destination file
-    std::fs::remove_file(&dst).unwrap();
+    std::fs::remove_file(dst).unwrap();
 
     println!("File contents match, reflink operation successful")
 }
