@@ -1,8 +1,12 @@
 #![deny(clippy::all)]
 
+mod error;
+
 use copy_on_write::reflink_file_sync;
-use napi::{bindgen_prelude::AsyncTask, Env, Error, JsNumber, Result, Task};
+use error::{object_to_error, reflink_error};
+use napi::{bindgen_prelude::AsyncTask, Env, JsNumber, Result, Task};
 use napi_derive::napi;
+use pipe_trait::Pipe;
 
 pub struct AsyncReflink {
     src: String,
@@ -11,21 +15,20 @@ pub struct AsyncReflink {
 
 #[napi]
 impl Task for AsyncReflink {
-    type Output = ();
+    type Output = std::result::Result<(), std::io::Error>;
     type JsValue = JsNumber;
 
     fn compute(&mut self) -> Result<Self::Output> {
-        reflink_file_sync(&self.src, &self.dst).map_err(|err| {
-            Error::from_reason(format!(
-                "{err}, reflink '{src}' -> '{dst}'",
-                src = self.src,
-                dst = self.dst,
-            ))
-        })
+        Ok(reflink_file_sync(&self.src, &self.dst))
     }
 
-    fn resolve(&mut self, env: Env, _: ()) -> Result<Self::JsValue> {
-        env.create_int32(0)
+    fn resolve(&mut self, env: Env, output: Self::Output) -> Result<Self::JsValue> {
+        match output {
+            Ok(()) => env.create_int32(0),
+            Err(io_error) => reflink_error(env, io_error, &self.src, &self.dst)?
+                .pipe(object_to_error)
+                .pipe(Err),
+        }
     }
 }
 
@@ -39,10 +42,10 @@ pub fn reflink_task(src: String, dst: String) -> AsyncTask<AsyncReflink> {
 #[napi(js_name = "reflinkFileSync")]
 pub fn reflink_sync(env: Env, src: String, dst: String) -> Result<JsNumber> {
     match reflink_file_sync(&src, &dst) {
-        Ok(_) => Ok(env.create_int32(0)?),
-        Err(err) => Err(Error::from_reason(format!(
-            "{err}, reflink '{src}' -> '{dst}'"
-        ))),
+        Ok(()) => env.create_int32(0),
+        Err(io_error) => reflink_error(env, io_error, &src, &dst)?
+            .pipe(object_to_error)
+            .pipe(Err),
     }
 }
 

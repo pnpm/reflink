@@ -12,6 +12,7 @@ futures = "0.3.31"
 # Default enable napi4 feature, see https://nodejs.org/api/n-api.html#node-api-version-matrix
 napi = { version = "2.16.13", default-features = false, features = ["napi4"] }
 napi-derive = "2.16.12"
+pipe-trait = "0.4.0"
 
 [build-dependencies]
 napi-build = "2.1.3"
