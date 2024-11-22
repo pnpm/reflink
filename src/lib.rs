@@ -16,14 +16,13 @@ impl Task for AsyncReflink {
     type JsValue = JsNumber;
 
     fn compute(&mut self) -> Result<Self::Output> {
-        match reflink_file_sync(&self.src, &self.dst) {
-            Ok(_) => Ok(()),
-            Err(err) => Err(Error::from_reason(format!(
+        reflink_file_sync(&self.src, &self.dst).map_err(|err| {
+            Error::from_reason(format!(
                 "{err}, reflink '{src}' -> '{dst}'",
                 src = self.src,
                 dst = self.dst,
-            ))),
-        }
+            ))
+        })
     }
 
     fn resolve(&mut self, env: Env, _: ()) -> Result<Self::JsValue> {
