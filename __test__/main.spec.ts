@@ -1,4 +1,5 @@
 import { afterAll, describe, expect, it } from 'vitest';
+import { constants } from 'os';
 import { join, resolve } from 'path';
 import { mkdir, rm, writeFile } from 'fs/promises';
 import { readFileSync } from 'fs';
@@ -98,12 +99,20 @@ describe('reflink', () => {
     const dir = sandboxDir();
     await prepare(dir);
 
-    expect(() => {
+    try {
       reflinkFileSync(
         join(dir, 'file-does-not-exist.txt'),
         join(dir, 'file1-copy.txt')
       );
-    }).toThrow();
+    } catch (error) {
+      expect(error).toMatchObject({
+        message: expect.any(String),
+        code: 'ENOENT',
+        errno: constants.errno.ENOENT,
+      });
+      return;
+    }
+    throw new Error('Expecting an error, but none was thrown');
   });
 
   it('should fail if the source file does not exist (async)', async () => {
@@ -115,16 +124,28 @@ describe('reflink', () => {
         join(dir, 'file-does-not-exist.txt'),
         join(dir, 'file1-copy.txt')
       )
-    ).rejects.toThrow();
+    ).rejects.toMatchObject({
+      message: expect.any(String),
+      code: 'ENOENT',
+      errno: constants.errno.ENOENT,
+    });
   });
 
   it('should fail if the destination file already exists (sync)', async () => {
     const dir = sandboxDir();
     const sandboxFiles = await prepare(dir);
 
-    expect(() => {
+    try {
       reflinkFileSync(sandboxFiles[0].path, sandboxFiles[1].path);
-    }).toThrow();
+    } catch (error) {
+      expect(error).toMatchObject({
+        message: expect.any(String),
+        code: 'EEXIST',
+        errno: constants.errno.EEXIST,
+      });
+      return;
+    }
+    throw new Error('Expecting an error, but none was thrown');
   });
 
   it('should fail if the destination file already exists (async)', async () => {
@@ -132,7 +153,11 @@ describe('reflink', () => {
     const sandboxFiles = await prepare(dir);
     await expect(
       reflinkFile(sandboxFiles[0].path, sandboxFiles[1].path)
-    ).rejects.toThrow();
+    ).rejects.toMatchObject({
+      message: expect.any(String),
+      code: 'EEXIST',
+      errno: constants.errno.EEXIST,
+    });
   });
 
   it('should fail if the source file is a directory (sync)', async () => {
