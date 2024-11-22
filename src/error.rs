@@ -1,5 +1,4 @@
-use napi::{bindgen_prelude::FromNapiValue, Env, JsError, JsObject};
-use pipe_trait::Pipe;
+use napi_derive::napi;
 use std::io::ErrorKind;
 
 /// Infer error code and its number.
@@ -16,32 +15,30 @@ fn error_code(kind: ErrorKind) -> Option<(&'static str, i16)> {
     })
 }
 
-/// Create an error object with additional properties.
-///
-/// The additional properties are the same as Node.js errors except `syscall`.
-pub fn reflink_error(
-    env: Env,
-    io_error: std::io::Error,
-    src: &str,
-    dst: &str,
-) -> Result<JsObject, napi::Error> {
-    let mut error_object = format!("{io_error}, reflink '{src}' -> '{dst}'")
-        .pipe(napi::Error::from_reason)
-        .pipe(JsError::from)
-        .pipe(move |js_error| js_error.into_unknown(env))
-        .pipe(JsObject::from_unknown)?;
-
-    error_object.set_named_property("path", src).ok();
-    error_object.set_named_property("dest", dst).ok();
-    if let Some((code, errno)) = error_code(io_error.kind()) {
-        error_object.set_named_property("code", code).ok();
-        error_object.set_named_property("errno", errno).ok();
-    }
-
-    Ok(error_object)
+/// Contains all properties to construct an actual error.
+#[derive(Debug, Clone)]
+#[napi(constructor)]
+pub struct ReflinkError {
+    pub message: String,
+    pub path: String,
+    pub dest: String,
+    pub code: Option<&'static str>,
+    pub errno: Option<i16>,
 }
 
-/// Convert an error object into an N-API error.
-pub fn object_to_error(error_object: JsObject) -> napi::Error {
-    error_object.into_unknown().into()
+impl ReflinkError {
+    pub fn new(io_error: std::io::Error, path: String, dest: String) -> Self {
+        let message = format!("{io_error}, reflink '{path}' -> '{dest}'");
+        let (code, errno) = match error_code(io_error.kind()) {
+            Some((code, errno)) => (Some(code), Some(errno)),
+            None => (None, None),
+        };
+        ReflinkError {
+            message,
+            path,
+            dest,
+            code,
+            errno,
+        }
+    }
 }

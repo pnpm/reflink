@@ -37,8 +37,8 @@
   },
   "scripts": {
     "artifacts": "napi artifacts",
-    "build": "napi build --platform --release",
-    "build:debug": "napi build --platform",
+    "build": "napi build --js binding.js --dts binding.d.ts --platform --release",
+    "build:debug": "napi build --js binding.js --dts binding.d.ts --platform",
     "prepublishOnly": "napi prepublish -t npm",
     "pretest": "pnpm build",
     "test": "cargo t && vitest && rimraf -g __reflink-tests-*",
