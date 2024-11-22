@@ -40,6 +40,7 @@ jobs:
             docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian
             build: |-
               set -e &&
+              rustup target add x86_64-unknown-linux-gnu &&
               pnpm build --target x86_64-unknown-linux-gnu &&
               strip *.node
           - host: ubuntu-latest
@@ -56,6 +57,7 @@ jobs:
             docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian-aarch64
             build: |-
               set -e &&
+              rustup target add aarch64-unknown-linux-gnu &&
               pnpm build --target aarch64-unknown-linux-gnu &&
               aarch64-unknown-linux-gnu-strip *.node
           - host: ubuntu-latest
@@ -68,7 +70,10 @@ jobs:
               /aarch64-linux-musl-cross/bin/aarch64-linux-musl-strip *.node
           - host: windows-latest
             target: aarch64-pc-windows-msvc
-            build: pnpm build --target aarch64-pc-windows-msvc
+            build: |-
+              set -e &&
+              rustup target add aarch64-pc-windows-msvc &&
+              pnpm build --target aarch64-pc-windows-msvc
     name: stable - ${{ matrix.settings.target }} - node@18
     runs-on: ${{ matrix.settings.host }}
     steps:
@@ -257,7 +262,7 @@ jobs:
           version: 8.10.2
           run_install: false
           standalone: true
-      
+
       - name: Install dependencies
         run: |
           pnpm dlx @ialdama/jsonmod --key pnpm.supportedArchitectures.libc --values musl current
@@ -334,7 +339,7 @@ jobs:
         with:
           name: bindings-aarch64-unknown-linux-musl
           path: .
-      
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
@@ -410,7 +415,7 @@ jobs:
             COMMIT_MESSAGE=$(git log -1 --pretty=%B)
           fi
           RELEASE_TYPE=$(echo $COMMIT_MESSAGE | grep -oE "\(([a-zA-Z]+)\)" | tr -d '()')
-      
+
           if [ "${GITHUB_REF##*/}" = "main" ]; then
             if [[ $COMMIT_MESSAGE =~ ^release(\ \([a-zA-Z]+\))?:\ v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
               # Use a default release type of 'latest' if no type is specified in the commit message
@@ -424,23 +429,23 @@ jobs:
             if [[ $COMMIT_MESSAGE =~ ^release(\ \([a-zA-Z]+\))?:\ v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
               # Use a default release type of 'canary' if no type is specified in the commit message
               RELEASE_TYPE=${RELEASE_TYPE:-canary}
-              
+
               # Extract the current version from package.json
               CURRENT_VERSION=$(jq -r '.version' package.json)
-              
+
               # Create a new pre-release version by appending the commit hash to the current version
               NEW_VERSION="$CURRENT_VERSION-canary.$COMMIT_HASH"
-              
+
               # Update package.json with the new version
               jq --arg newVersion "$NEW_VERSION" '.version = $newVersion' package.json > temp.json && mv temp.json package.json
-              
+
               echo "Updated version to $NEW_VERSION"
 
               pnpm run version
-              
+
               # Set up .npmrc config file for authentication
               echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-              
+
               # Publish the package with the new canary version
               npm publish --tag $RELEASE_TYPE --access public
             else
@@ -452,6 +457,3 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-      
-      
-      
