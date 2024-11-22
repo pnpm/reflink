@@ -201,3 +201,5 @@ $RECYCLE.BIN/
 sandbox
 __reflink-tests-*
 *.json.bak
+
+/.vscode/*.json
