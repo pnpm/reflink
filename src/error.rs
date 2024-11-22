@@ -9,7 +9,7 @@ fn error_code(kind: ErrorKind) -> Option<(&'static str, i16)> {
     // Future contributors may add more if they need it.
     Some(match kind {
         ErrorKind::AlreadyExists => ("EEXIST", 17),
-        ErrorKind::NotFound => ("ENOENT", 2),
+        ErrorKind::InvalidInput | ErrorKind::NotFound => ("ENOENT", 2),
         ErrorKind::PermissionDenied => ("EPERM", 1),
         _ => return None,
     })
