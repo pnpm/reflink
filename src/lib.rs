@@ -1,9 +1,8 @@
 #![deny(clippy::all)]
 
-#[macro_use]
-extern crate napi_derive;
 use copy_on_write::reflink_file_sync;
 use napi::{bindgen_prelude::AsyncTask, Env, Error, JsNumber, Result, Task};
+use napi_derive::napi;
 
 pub struct AsyncReflink {
     src: String,
