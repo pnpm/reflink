@@ -330,7 +330,7 @@ describe('reflink', () => {
   });
 
   /**
-   * The issue with empty cloned files doesnt seem related to ASCII characters
+   * The issue with empty cloned files doesn't seem related to ASCII characters
    */
   it.skip('should clone "ascii-file.js" file correctly (sync)', async () => {
     const dir = sandboxDir();
