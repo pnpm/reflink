@@ -61,5 +61,5 @@ function createHash(content) {
 
 main().catch((err) => {
   console.error(err);
-  throw process.exit(1);
+  process.exit(1);
 });
