@@ -20,6 +20,8 @@
     "npmClient": "npm"
   },
   "files": [
+    "binding.js",
+    "binding.d.ts",
     "index.js",
     "index.d.ts"
   ],
