@@ -46,7 +46,6 @@ const reflinkFile = (src, dst) => binding.reflinkFile(src, dst).then(handleRefli
 const reflinkFileSync = (src, dst) => handleReflinkResult(binding.reflinkFileSync(src, dst));
 
 module.exports = {
-  binding,
   reflinkFile,
   reflinkFileSync,
 };

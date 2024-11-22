@@ -1,4 +1,3 @@
-import binding = require("./binding");
 /**
  * Create a reflink asynchronously.
  * @param {String} src Source of the reflink.
@@ -13,4 +12,3 @@ export function reflinkFile(src: string, dst: string): Promise<number>;
  * @returns {number}
  */
 export function reflinkFileSync(src: string, dst: string): number;
-export { binding };
