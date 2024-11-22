@@ -20,6 +20,8 @@
     "npmClient": "npm"
   },
   "files": [
+    "binding.js",
+    "binding.d.ts",
     "index.js",
     "index.d.ts"
   ],
@@ -37,8 +39,9 @@
   },
   "scripts": {
     "artifacts": "napi artifacts",
-    "build": "napi build --platform --release",
-    "build:debug": "napi build --platform",
+    "build": "pnpm gen-dts && napi build --js binding.js --dts binding.d.ts --platform --release",
+    "build:debug": "pnpm gen-dts && napi build --js binding.js --dts binding.d.ts --platform",
+    "gen-dts": "tsc --checkJs index.js --declaration --emitDeclarationOnly",
     "prepublishOnly": "napi prepublish -t npm",
     "pretest": "pnpm build",
     "test": "cargo t && vitest && rimraf -g __reflink-tests-*",

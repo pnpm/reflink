@@ -1,8 +1,12 @@
 #![deny(clippy::all)]
 
+mod error;
+
 use copy_on_write::reflink_file_sync;
-use napi::{bindgen_prelude::AsyncTask, Env, Error, JsNumber, Result, Task};
+use error::ReflinkError;
+use napi::{bindgen_prelude::AsyncTask, Either, Env, JsNumber, Result, Task};
 use napi_derive::napi;
+use pipe_trait::Pipe;
 
 pub struct AsyncReflink {
     src: String,
@@ -11,21 +15,22 @@ pub struct AsyncReflink {
 
 #[napi]
 impl Task for AsyncReflink {
-    type Output = ();
-    type JsValue = JsNumber;
+    type Output = std::result::Result<(), std::io::Error>;
+    type JsValue = Either<JsNumber, ReflinkError>;
 
     fn compute(&mut self) -> Result<Self::Output> {
-        reflink_file_sync(&self.src, &self.dst).map_err(|err| {
-            Error::from_reason(format!(
-                "{err}, reflink '{src}' -> '{dst}'",
-                src = self.src,
-                dst = self.dst,
-            ))
-        })
+        Ok(reflink_file_sync(&self.src, &self.dst))
     }
 
-    fn resolve(&mut self, env: Env, _: ()) -> Result<Self::JsValue> {
-        env.create_int32(0)
+    fn resolve(&mut self, env: Env, output: Self::Output) -> Result<Self::JsValue> {
+        match output {
+            Ok(()) => env.create_int32(0).map(Either::A),
+            Err(io_error) => {
+                ReflinkError::new(io_error, self.src.to_string(), self.dst.to_string())
+                    .pipe(Either::B)
+                    .pipe(Ok)
+            }
+        }
     }
 }
 
@@ -37,12 +42,12 @@ pub fn reflink_task(src: String, dst: String) -> AsyncTask<AsyncReflink> {
 
 // Sync version
 #[napi(js_name = "reflinkFileSync")]
-pub fn reflink_sync(env: Env, src: String, dst: String) -> Result<JsNumber> {
+pub fn reflink_sync(env: Env, src: String, dst: String) -> Result<Either<JsNumber, ReflinkError>> {
     match reflink_file_sync(&src, &dst) {
-        Ok(_) => Ok(env.create_int32(0)?),
-        Err(err) => Err(Error::from_reason(format!(
-            "{err}, reflink '{src}' -> '{dst}'"
-        ))),
+        Ok(()) => env.create_int32(0).map(Either::A),
+        Err(io_error) => ReflinkError::new(io_error, src, dst)
+            .pipe(Either::B)
+            .pipe(Ok),
     }
 }
 
