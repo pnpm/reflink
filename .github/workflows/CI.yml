@@ -82,12 +82,12 @@ jobs:
         uses: actions/setup-node@v3
         if: ${{ !matrix.settings.docker }}
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: 8.10.2
+          version: 9.12.3
           run_install: false
           standalone: true
 
@@ -133,7 +133,7 @@ jobs:
         uses: actions/setup-node@v3
         if: matrix.settings.target == 'i686-pc-windows-msvc'
         with:
-          node-version: 20
+          node-version: 22
           check-latest: true
           architecture: x86
       - name: Build in docker
@@ -166,9 +166,8 @@ jobs:
           - host: windows-latest
             target: x86_64-pc-windows-msvc
         node:
-          - '16'
-          - '18'
           - '20'
+          - '22'
     runs-on: ${{ matrix.settings.host }}
     steps:
       - uses: actions/checkout@v3
@@ -181,7 +180,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: 8.10.2
+          version: 9.12.3
           run_install: false
           standalone: true
 
@@ -205,9 +204,8 @@ jobs:
       fail-fast: false
       matrix:
         node:
-          - '16'
-          - '18'
           - '20'
+          - '22'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -220,7 +218,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: 8.10.2
+          version: 9.12.3
           run_install: false
           standalone: true
 
@@ -244,9 +242,8 @@ jobs:
       fail-fast: false
       matrix:
         node:
-          - '16'
-          - '18'
           - '20'
+          - '22'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -259,7 +256,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: 8.10.2
+          version: 9.12.3
           run_install: false
           standalone: true
 
@@ -285,9 +282,8 @@ jobs:
       fail-fast: false
       matrix:
         node:
-          - '16'
-          - '18'
           - '20'
+          - '22'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -300,7 +296,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: 8.10.2
+          version: 9.12.3
           run_install: false
           standalone: true
 
@@ -343,7 +339,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: 8.10.2
+          version: 9.12.3
           run_install: false
           standalone: true
 
@@ -383,13 +379,13 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 22
           check-latest: true
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: 8.10.2
+          version: 9.12.3
           run_install: false
           standalone: true
 
@@ -407,50 +403,14 @@ jobs:
       - name: Publish
         run: |
           npm config set provenance true
-          COMMIT_HASH=$(git rev-parse --short HEAD)
-          # If it's a pull request event, use the PR title or the head commit message
-          if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
-            COMMIT_MESSAGE=$(jq --raw-output .pull_request.title "$GITHUB_EVENT_PATH")
-          else
-            COMMIT_MESSAGE=$(git log -1 --pretty=%B)
-          fi
-          RELEASE_TYPE=$(echo $COMMIT_MESSAGE | grep -oE "\(([a-zA-Z]+)\)" | tr -d '()')
-
-          if [ "${GITHUB_REF##*/}" = "main" ]; then
-            if [[ $COMMIT_MESSAGE =~ ^release(\ \([a-zA-Z]+\))?:\ v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-              # Use a default release type of 'latest' if no type is specified in the commit message
-              RELEASE_TYPE=${RELEASE_TYPE:-latest}
-              echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-              npm publish --tag $RELEASE_TYPE --access public
-            else
-              echo "Commit does not start with 'release', skipping publish"
-            fi
-          elif [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
-            if [[ $COMMIT_MESSAGE =~ ^release(\ \([a-zA-Z]+\))?:\ v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-              # Use a default release type of 'canary' if no type is specified in the commit message
-              RELEASE_TYPE=${RELEASE_TYPE:-canary}
-
-              # Extract the current version from package.json
-              CURRENT_VERSION=$(jq -r '.version' package.json)
-
-              # Create a new pre-release version by appending the commit hash to the current version
-              NEW_VERSION="$CURRENT_VERSION-canary.$COMMIT_HASH"
-
-              # Update package.json with the new version
-              jq --arg newVersion "$NEW_VERSION" '.version = $newVersion' package.json > temp.json && mv temp.json package.json
-
-              echo "Updated version to $NEW_VERSION"
-
-              pnpm run version
-
-              # Set up .npmrc config file for authentication
-              echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-
-              # Publish the package with the new canary version
-              npm publish --tag $RELEASE_TYPE --access public
-            else
-              echo "PR does not start with 'release', skipping publish"
-            fi
+          if git log -1 --pretty=%B | grep "^[0-9]\+\.[0-9]\+\.[0-9]\+$";
+          then
+            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+            npm publish --access public
+          elif git log -1 --pretty=%B | grep "^[0-9]\+\.[0-9]\+\.[0-9]\+";
+          then
+            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+            npm publish --tag next --access public
           else
             echo "Not a release, skipping publish"
           fi
