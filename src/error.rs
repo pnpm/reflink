@@ -11,7 +11,7 @@ fn error_code(kind: ErrorKind) -> Option<(&'static str, i16)> {
         ErrorKind::AlreadyExists => ("EEXIST", 17),
         ErrorKind::InvalidInput | ErrorKind::NotFound => ("ENOENT", 2),
         ErrorKind::PermissionDenied => ("EPERM", 1),
-        _ => None,
+        _ => return None,
     })
 }
 
